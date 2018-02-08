@@ -269,7 +269,14 @@ public class MainClass {
 
                 MainClass.this.curve.changeCurveStatus(CurveType.CUBICBSPLINE);
 
-                //TODO: update cubic B-spline with uniform knot vector
+                PointsOperation.updatePoints(canvas.getGraphics(),
+                        MainClass.this.curve.controlPoints(),
+                        MainClass.this.curve.currentIndex(), canvas.getWidth(),
+                        canvas.getHeight());
+                if (MainClass.this.curve.controlPoints().size() > 1) {
+                    MainClass.this.curve.curveType().updateCurve(
+                            MainClass.this.curve, canvas.getGraphics());
+                }
 
             }
         });
@@ -284,7 +291,15 @@ public class MainClass {
 
                 MainClass.this.curve.changeCurveStatus(CurveType.BEZIER);
 
-                //TODO: update Bezier curve - one curve for all the points
+                PointsOperation.updatePoints(canvas.getGraphics(),
+                        MainClass.this.curve.controlPoints(),
+                        MainClass.this.curve.currentIndex(), canvas.getWidth(),
+                        canvas.getHeight());
+                if (MainClass.this.curve.controlPoints().size() > 1) {
+                    MainClass.this.curve.curveType().updateCurve(
+                            MainClass.this.curve, canvas.getGraphics());
+                }
+
             }
         });
         bezier_curve.setSelected(true);

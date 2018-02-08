@@ -26,7 +26,10 @@ public enum CurveType implements Operation {
     CUBICBSPLINE {
         @Override
         public void updateCurve(Curve curve, Graphics g) {
-            // TODO Auto-generated method stub
+
+            CubicUniformBSpline c = new CubicUniformBSpline(
+                    curve.controlPoints());
+            c.generateCurve(g);
 
         }
 
