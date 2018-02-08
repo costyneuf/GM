@@ -1,7 +1,6 @@
 
 import java.awt.Canvas;
 import java.awt.EventQueue;
-import java.awt.Graphics2D;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
@@ -15,6 +14,7 @@ import javax.swing.JTextPane;
 import javax.swing.UIManager;
 
 import curve.Curve;
+import curve.PointsOperation;
 
 public class MainClass {
 
@@ -97,6 +97,7 @@ public class MainClass {
          * displayed.
          */
         Canvas canvas = new Canvas();
+
         canvas.addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseDragged(MouseEvent arg0) {
@@ -192,16 +193,17 @@ public class MainClass {
         clear.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent arg0) {
-
-                //TODO: Update the linked list.
-
-                //TODO: Update the curve.
-
-                //TODO: Rewrite the following code into  PointsOperation.
+                /*
+                 * Clear linked list.
+                 */
                 MainClass.this.curve.clear();
-                Graphics2D g2 = (Graphics2D) canvas.getGraphics();
-                g2.setColor(UIManager.getColor("ComboBox.selectionForeground"));
-                g2.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+
+                /*
+                 * Clear canvas.
+                 */
+                PointsOperation.updatePoints(canvas.getGraphics(),
+                        MainClass.this.curve.controlPoints(), -1,
+                        canvas.getWidth(), canvas.getHeight());
             }
         });
         clear.setBounds(34, 560, 277, 25);

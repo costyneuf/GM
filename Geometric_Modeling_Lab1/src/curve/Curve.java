@@ -105,23 +105,37 @@ public class Curve {
      *
      * @param point
      *            point will be added, deleted, or changed
+     * @return the current index
      */
-    public void updateIndex(Point point) {
+    public int updateIndexAndList(Point point) {
 
         if (this.pointType == PointType.ADD) {
+
+            this.insertPoints.add(point);
             this.currentIndex++;
+
         } else if (this.pointType == PointType.EDIT) {
+
             this.currentIndex = this.insertPoints.indexOf(point);
+
+        } else if (this.pointType == PointType.INSERT) {
+
+            /*
+             * Use else-if for future updates.
+             */
+
+            this.insertPoints.add(this.currentIndex, point);
         }
+        return this.currentIndex;
     }
 
     /**
-     * Return the number of points that have been inserted.
+     * Return all control points in the curve.
      *
-     * @return number of points inserted
+     * @return a linked list of control points
      */
-    public int numberOfPoints() {
-        return this.insertPoints.size();
+    public List<Point> controlPoints() {
+        return this.insertPoints;
     }
 
     /**
@@ -129,6 +143,14 @@ public class Curve {
      */
     public void clear() {
         this.createNewRep();
+    }
+
+    public void delete() {
+
+    }
+
+    public void duplicate() {
+
     }
 
 }
