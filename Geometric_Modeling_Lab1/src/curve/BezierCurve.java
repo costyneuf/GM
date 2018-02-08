@@ -24,7 +24,7 @@ public class BezierCurve {
     /**
      * Initial value of u.
      */
-    private static final double INITIAL_U = 1E-2;
+    private static final double INITIAL_U = 1E-4;
 
     /**
      * Store a copy of ctrlPoints list.
@@ -134,62 +134,27 @@ public class BezierCurve {
          */
         if (this.points.size() > 2) {
 
-            if (this.subdivisions > 0) {
+            double j = INITIAL_U;
 
-                SubdivisionDeCasteljau c = new SubdivisionDeCasteljau(
-                        this.points, this.subdivisions);
-                List<Point> temp = c.updatePoints(0.5);
-                this.points.clear();
-                this.points.addAll(temp);
+            while (j < 1) {
 
-                for (int i = 1; i < this.points.size() - 1; i++) {
+                double p2X = 0, p2Y = 0;
 
-                    double j = INITIAL_U;
-
-                    Point p0 = this.points.get(i - 1);
-                    Point p1 = this.points.get(i);
-                    Point p2 = this.points.get(i + 1);
-
-                    while (j < 1) {
-
-                        double pX = (1 - j) * (1 - j) * p0.x
-                                + 2 * j * (1 - j) * p1.x + j * j * p2.x;
-                        double pY = (1 - j) * (1 - j) * p0.y
-                                + 2 * j * (1 - j) * p1.y + j * j * p2.y;
-
-                        g2.drawLine(p1X, p1Y, (int) Math.round(pX),
-                                (int) Math.round(pY));
-
-                        p1X = (int) Math.round(pX);
-                        p1Y = (int) Math.round(pY);
-
-                        j += INITIAL_U;
-
-                    }
+                for (int i = 0; i < this.points.size(); i++) {
+                    p2X += (this.points.get(i).x
+                            * bernstein(this.points.size() - 1, i, j));
+                    p2Y += (this.points.get(i).y
+                            * bernstein(this.points.size() - 1, i, j));
                 }
 
-            } else {
-                double j = INITIAL_U;
+                g2.drawLine(p1X, p1Y, (int) Math.round(p2X),
+                        (int) Math.round(p2Y));
+                p1X = (int) Math.round(p2X);
+                p1Y = (int) Math.round(p2Y);
 
-                while (j < 1) {
-
-                    double p2X = 0, p2Y = 0;
-
-                    for (int i = 0; i < this.points.size(); i++) {
-                        p2X += (this.points.get(i).x
-                                * bernstein(this.points.size() - 1, i, j));
-                        p2Y += (this.points.get(i).y
-                                * bernstein(this.points.size() - 1, i, j));
-                    }
-
-                    g2.drawLine(p1X, p1Y, (int) Math.round(p2X),
-                            (int) Math.round(p2Y));
-                    p1X = (int) Math.round(p2X);
-                    p1Y = (int) Math.round(p2Y);
-
-                    j += INITIAL_U;
-                }
+                j += INITIAL_U;
             }
+
         }
 
         /*
