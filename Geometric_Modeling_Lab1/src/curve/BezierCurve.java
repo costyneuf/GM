@@ -132,13 +132,12 @@ public class BezierCurve {
                         (int) Math.round(p2Y));
                 p1X = (int) Math.round(p2X);
                 p1Y = (int) Math.round(p2Y);
-
                 j += INITIAL_U;
             }
         }
 
         /*
-         * Connect the end point with the last but one point in curve.
+         * Connected points.
          */
         g2.drawLine(p1X, p1Y, this.points.get(n - 1).x,
                 this.points.get(n - 1).y);
