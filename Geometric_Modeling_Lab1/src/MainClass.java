@@ -16,6 +16,7 @@ import javax.swing.UIManager;
 import org.eclipse.swt.graphics.Point;
 
 import curve.Curve;
+import curve.CurveType;
 import curve.PointType;
 import curve.PointsOperation;
 
@@ -112,6 +113,8 @@ public class MainClass {
                         MainClass.this.curve.currentIndex(), canvas.getWidth(),
                         canvas.getHeight());
 
+                //TODO: Update the curve.
+
             }
         });
         canvas.addMouseListener(new MouseAdapter() {
@@ -126,7 +129,8 @@ public class MainClass {
                         MainClass.this.curve.currentIndex(), canvas.getWidth(),
                         canvas.getHeight());
 
-                //TODO: Call an update method here.
+                MainClass.this.curve.curveType().updateCurve(
+                        MainClass.this.curve, canvas.getGraphics());
 
             }
 
@@ -239,7 +243,10 @@ public class MainClass {
             @Override
             public void mouseClicked(MouseEvent e) {
 
-                //TODO: Change curve status and update curve.
+                MainClass.this.curve
+                        .changeCurveStatus(CurveType.QUADRICBSPLINE);
+
+                //TODO: update subdivision quadric b-spline with uniform knot vector.
 
             }
         });
@@ -252,7 +259,10 @@ public class MainClass {
         deCasteljau_sub_curve.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                //TODO: Change curve status and update curve.
+
+                MainClass.this.curve.changeCurveStatus(CurveType.DECASTELJAU);
+
+                //TODO: update subdivision curves using repeated de Casteljau method
 
             }
         });
@@ -265,7 +275,10 @@ public class MainClass {
         uniform_cubic_bSpline.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                //TODO: Change curve status and update curve.
+
+                MainClass.this.curve.changeCurveStatus(CurveType.CUBICBSPLINE);
+
+                //TODO: update cubic B-spline with uniform knot vector
 
             }
         });
@@ -278,7 +291,9 @@ public class MainClass {
             @Override
             public void mouseClicked(MouseEvent e) {
 
-                //TODO: Change curve status and update curve.
+                MainClass.this.curve.changeCurveStatus(CurveType.BEZIER);
+
+                //TODO: update Bezier curve - one curve for all the points
             }
         });
         bezier_curve.setSelected(true);
