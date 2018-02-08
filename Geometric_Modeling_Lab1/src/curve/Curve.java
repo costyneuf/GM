@@ -157,7 +157,7 @@ public class Curve {
 
     /**
      * Return the type of current curve.
-     * 
+     *
      * @return type of curve
      */
     public Operation curveType() {
@@ -171,6 +171,10 @@ public class Curve {
      */
     public void changePointStatus(Operation pointStatus) {
         this.pointType = pointStatus;
+    }
+
+    public Operation pointType() {
+        return this.pointType;
     }
 
     /**
