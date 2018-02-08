@@ -6,6 +6,9 @@ import org.eclipse.swt.graphics.Point;
 
 public enum CurveType implements Operation {
 
+    /**
+     * Bezier curve - one curve for all the points.
+     */
     BEZIER {
         @Override
         public void updateCurve(Curve curve, Graphics g) {
@@ -15,6 +18,9 @@ public enum CurveType implements Operation {
 
     },
 
+    /**
+     * Cubic B-spline with uniform knot vector.
+     */
     CUBICBSPLINE {
         @Override
         public void updateCurve(Curve curve, Graphics g) {
@@ -24,6 +30,9 @@ public enum CurveType implements Operation {
 
     },
 
+    /**
+     * Subdivision curves using repeated de Casteljau method.
+     */
     DECASTELJAU {
         @Override
         public void updateCurve(Curve curve, Graphics g) {
@@ -33,6 +42,9 @@ public enum CurveType implements Operation {
 
     },
 
+    /**
+     * Subdivision Quadric B-Spline with uniform knot vector.
+     */
     QUADRICBSPLINE {
         @Override
         public void updateCurve(Curve curve, Graphics g) {
