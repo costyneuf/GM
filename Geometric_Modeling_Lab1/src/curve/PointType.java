@@ -13,6 +13,9 @@ import org.eclipse.swt.graphics.Point;
  */
 public enum PointType implements Operation {
 
+    /**
+     * Add a point after the current index.
+     */
     ADD {
         @Override
         public void updatePointsList(Point point, Curve curve) {
@@ -21,6 +24,9 @@ public enum PointType implements Operation {
         }
     },
 
+    /**
+     * Insert a point before the current index.
+     */
     INSERT {
         @Override
         public void updatePointsList(Point point, Curve curve) {
@@ -29,6 +35,9 @@ public enum PointType implements Operation {
         }
     },
 
+    /**
+     * Edit a point at the current index.
+     */
     EDIT {
         @Override
         public void updatePointsList(Point point, Curve curve) {
