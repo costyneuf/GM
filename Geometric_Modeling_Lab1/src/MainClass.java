@@ -1,3 +1,4 @@
+
 import java.awt.Canvas;
 import java.awt.EventQueue;
 import java.awt.Graphics2D;
@@ -12,6 +13,8 @@ import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.UIManager;
+
+import curve.Curve;
 
 public class MainClass {
 

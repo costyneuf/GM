@@ -1,3 +1,4 @@
+package curve;
 /**
  *  Calculate position of each points and generate curves.
  */
