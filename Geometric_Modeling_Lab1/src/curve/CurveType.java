@@ -59,10 +59,9 @@ public enum CurveType implements Operation {
         @Override
         public void updateCurve(Curve curve, Graphics g) {
 
-            BezierCurve c = new BezierCurve(curve.controlPoints(),
-                    curve.getSubdivision());
-
-            c.generateCurve(g);
+            SubdivisionDeCasteljau c = new SubdivisionDeCasteljau(
+                    curve.controlPoints(), curve.getSubdivision());
+            c.updatePoints(g);
 
         }
 

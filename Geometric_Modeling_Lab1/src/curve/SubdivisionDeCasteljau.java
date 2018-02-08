@@ -3,6 +3,9 @@
  */
 package curve;
 
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -17,6 +20,8 @@ public class SubdivisionDeCasteljau {
     /*
      * Private members.
      */
+
+    private static final double U = 0.5;
 
     /**
      * Store a copy of ctrlPoints list.
@@ -144,10 +149,20 @@ public class SubdivisionDeCasteljau {
     /*
      * Public methods.
      */
-    public List<Point> updatePoints(double u) {
+    public void updatePoints(Graphics g) {
 
-        subdivide(this.ctrlPoints, this.subdivisions, u);
-        return this.ctrlPoints;
+        /*
+         * Set up color.
+         */
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setColor(Color.WHITE);
+
+        subdivide(this.ctrlPoints, this.subdivisions, U);
+
+        for (int i = 0; i < this.ctrlPoints.size() - 1; i++) {
+            g2.drawLine(this.ctrlPoints.get(i).x, this.ctrlPoints.get(i).y,
+                    this.ctrlPoints.get(i + 1).x, this.ctrlPoints.get(i + 1).y);
+        }
     }
 
 }

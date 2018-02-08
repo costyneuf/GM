@@ -49,18 +49,6 @@ public class BezierCurve {
 
     }
 
-    public BezierCurve(List<Point> ctrlPoints, int subdivisions) {
-
-        /*
-         * Copy all points in ctrlPoints to points.
-         */
-        for (int i = 0; i < ctrlPoints.size(); i++) {
-            this.points.add(ctrlPoints.get(i));
-        }
-        this.subdivisions = subdivisions;
-
-    }
-
     /*
      * Private methods.
      */
