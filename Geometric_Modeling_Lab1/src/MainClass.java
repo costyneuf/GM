@@ -128,10 +128,10 @@ public class MainClass {
                         MainClass.this.curve.controlPoints(),
                         MainClass.this.curve.currentIndex(), canvas.getWidth(),
                         canvas.getHeight());
-
-                MainClass.this.curve.curveType().updateCurve(
-                        MainClass.this.curve, canvas.getGraphics());
-
+                if (MainClass.this.curve.controlPoints().size() > 1) {
+                    MainClass.this.curve.curveType().updateCurve(
+                            MainClass.this.curve, canvas.getGraphics());
+                }
             }
 
         });
