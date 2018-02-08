@@ -17,6 +17,7 @@ import org.eclipse.swt.graphics.Point;
 
 import curve.Curve;
 import curve.CurveType;
+import curve.Operation;
 import curve.PointType;
 import curve.PointsOperation;
 
@@ -27,6 +28,7 @@ public class MainClass {
     private JTextField textField;
     private ButtonGroup curveChoice = new ButtonGroup();
     private ButtonGroup pointChoice = new ButtonGroup();
+    private Operation last = CurveType.BEZIER;
 
     /**
      * Launch the application.
@@ -75,28 +77,6 @@ public class MainClass {
         this.textField.setColumns(10);
 
         /*
-         * Set up a refresh button. The button will parse the input in the
-         * message box to the curve.
-         */
-        JButton refreshButton = new JButton("Refresh");
-        refreshButton.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                try {
-                    MainClass.this.curve.changeSubdivision(Integer
-                            .parseInt(MainClass.this.textField.getText()));
-
-                } catch (NumberFormatException e1) {
-
-                } catch (NullPointerException e2) {
-
-                }
-            }
-        });
-        refreshButton.setBounds(225, 345, 95, 25);
-        this.frame.getContentPane().add(refreshButton);
-
-        /*
          * Set up a canvas where the points will be input and the curve will be
          * displayed.
          */
@@ -137,6 +117,7 @@ public class MainClass {
                     MainClass.this.curve.curveType().updateCurve(
                             MainClass.this.curve, canvas.getGraphics());
                 }
+
             }
 
         });
@@ -251,9 +232,20 @@ public class MainClass {
             @Override
             public void mouseClicked(MouseEvent e) {
 
-                MainClass.this.curve.changeCurveStatus(CurveType.DECASTELJAU);
+                if (MainClass.this.last == CurveType.BEZIER) {
+                    MainClass.this.last = MainClass.this.curve
+                            .changeCurveStatus(CurveType.DECASTELJAU);
+                }
 
-                //TODO: update subdivision curves using repeated de Casteljau method
+                if (MainClass.this.curve.curveType() == CurveType.DECASTELJAU) {
+                    PointsOperation.updatePoints(canvas.getGraphics(),
+                            MainClass.this.curve.controlPoints(),
+                            MainClass.this.curve.currentIndex(),
+                            canvas.getWidth(), canvas.getHeight());
+                    MainClass.this.curve.curveType().updateCurve(
+                            MainClass.this.curve, canvas.getGraphics());
+
+                }
 
             }
         });
@@ -333,6 +325,43 @@ public class MainClass {
         });
         clear.setBounds(34, 560, 277, 25);
         this.frame.getContentPane().add(clear);
+
+        /*
+         * Set up a refresh button. The button will parse the input in the
+         * message box to the curve.
+         */
+        JButton refreshButton = new JButton("Refresh");
+        refreshButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                try {
+                    MainClass.this.curve.changeSubdivision(Integer
+                            .parseInt(MainClass.this.textField.getText()));
+
+                    if (MainClass.this.curve
+                            .curveType() == CurveType.DECASTELJAU
+                            || MainClass.this.curve
+                                    .curveType() == CurveType.QUADRICBSPLINE) {
+
+                        PointsOperation.updatePoints(canvas.getGraphics(),
+                                MainClass.this.curve.controlPoints(),
+                                MainClass.this.curve.currentIndex(),
+                                canvas.getWidth(), canvas.getHeight());
+
+                        MainClass.this.curve.curveType().updateCurve(
+                                MainClass.this.curve, canvas.getGraphics());
+
+                    }
+
+                } catch (NumberFormatException e1) {
+
+                } catch (NullPointerException e2) {
+
+                }
+            }
+        });
+        refreshButton.setBounds(225, 345, 95, 25);
+        this.frame.getContentPane().add(refreshButton);
 
     }
 }

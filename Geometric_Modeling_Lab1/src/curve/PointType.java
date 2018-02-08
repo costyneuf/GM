@@ -4,6 +4,7 @@
 package curve;
 
 import java.awt.Graphics;
+import java.util.List;
 
 import org.eclipse.swt.graphics.Point;
 
@@ -44,6 +45,11 @@ public enum PointType implements Operation {
     public void updateCurve(Curve curve, Graphics g) {
         // No code need here.
 
+    }
+
+    @Override
+    public void updateCurve(List<Point> pt, Graphics g) {
+        // No code need here.
     }
 
     /**

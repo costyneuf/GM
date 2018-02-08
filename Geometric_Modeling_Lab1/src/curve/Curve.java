@@ -56,6 +56,7 @@ public class Curve {
      */
     private void createNewRep() {
         this.insertPoints = new LinkedList<>();
+
         this.subdivisions = 4; // default subdivisions is 4
         this.currentIndex = -1;
         this.curveType = CurveType.BEZIER;
@@ -147,12 +148,15 @@ public class Curve {
     }
 
     /**
-     * Update curve status.
+     * Update curve status and report the last status.
      *
      * @param curveStatus
+     * @return last status
      */
-    public void changeCurveStatus(Operation curveStatus) {
+    public Operation changeCurveStatus(Operation curveStatus) {
+        Operation last = this.curveType;
         this.curveType = curveStatus;
+        return last;
     }
 
     /**

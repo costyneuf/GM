@@ -1,6 +1,7 @@
 package curve;
 
 import java.awt.Graphics;
+import java.util.List;
 
 import org.eclipse.swt.graphics.Point;
 
@@ -14,6 +15,14 @@ public enum CurveType implements Operation {
         public void updateCurve(Curve curve, Graphics g) {
 
             BezierCurve c = new BezierCurve(curve.controlPoints());
+            c.generateCurve(g);
+
+        }
+
+        @Override
+        public void updateCurve(List<Point> pt, Graphics g) {
+
+            BezierCurve c = new BezierCurve(pt);
             c.generateCurve(g);
 
         }
@@ -33,6 +42,14 @@ public enum CurveType implements Operation {
 
         }
 
+        @Override
+        public void updateCurve(List<Point> pt, Graphics g) {
+
+            CubicUniformBSpline c = new CubicUniformBSpline(pt);
+            c.generateCurve(g);
+
+        }
+
     },
 
     /**
@@ -41,6 +58,16 @@ public enum CurveType implements Operation {
     DECASTELJAU {
         @Override
         public void updateCurve(Curve curve, Graphics g) {
+
+            SubdivisionDeCasteljau c = new SubdivisionDeCasteljau(
+                    curve.controlPoints(), curve.getSubdivision());
+
+            c.generateCurve(g);
+
+        }
+
+        @Override
+        public void updateCurve(List<Point> pt, Graphics g) {
             // TODO Auto-generated method stub
 
         }
@@ -53,6 +80,12 @@ public enum CurveType implements Operation {
     QUADRICBSPLINE {
         @Override
         public void updateCurve(Curve curve, Graphics g) {
+            // TODO Auto-generated method stub
+
+        }
+
+        @Override
+        public void updateCurve(List<Point> pt, Graphics g) {
             // TODO Auto-generated method stub
 
         }

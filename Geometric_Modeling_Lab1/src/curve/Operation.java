@@ -4,6 +4,7 @@
 package curve;
 
 import java.awt.Graphics;
+import java.util.List;
 
 import org.eclipse.swt.graphics.Point;
 
@@ -34,5 +35,16 @@ public interface Operation {
      *            the media for updating the canvas
      */
     void updateCurve(Curve curve, Graphics g);
+
+    /**
+     * Update the curve based on curve status in {@code pt} and redraw it on the
+     * canvas.
+     *
+     * @param pt
+     *            the control points list
+     * @param g
+     *            the media for updating the canvas
+     */
+    void updateCurve(List<Point> pt, Graphics g);
 
 }
