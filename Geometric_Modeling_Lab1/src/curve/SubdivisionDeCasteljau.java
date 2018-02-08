@@ -21,7 +21,7 @@ public class SubdivisionDeCasteljau {
      * Private members.
      */
 
-    private static final double U = 0.5;
+    private static final double U = 0.324;
 
     /**
      * Store a copy of ctrlPoints list.
@@ -44,10 +44,7 @@ public class SubdivisionDeCasteljau {
         /*
          * Copy all points in ctrlPoints to points.
          */
-        for (int i = 0; i < ctrlPoints.size(); i++) {
-            this.ctrlPoints.add(ctrlPoints.get(i));
-        }
-
+        this.ctrlPoints.addAll(ctrlPoints);
         this.subdivisions = subdivisions;
     }
 
@@ -70,19 +67,15 @@ public class SubdivisionDeCasteljau {
 
         int n = ctrlPoints.size() - 1;
 
-        /*
-         * if n = 0 output poly1.{p0}.poly2
-         */
         if (n == 0) {
 
+            /*
+             * base case: output poly1.{p0}.poly2
+             */
             Point p0 = ctrlPoints.remove(n);
-            while (!poly1.isEmpty()) {
-                ctrlPoints.add(poly1.remove(0));
-            }
+            ctrlPoints.addAll(poly1);
             ctrlPoints.add(p0);
-            while (!poly2.isEmpty()) {
-                ctrlPoints.add(poly2.remove(0));
-            }
+            ctrlPoints.addAll(poly2);
 
         } else {
 
@@ -90,28 +83,28 @@ public class SubdivisionDeCasteljau {
              * (1) poly1 := poly1.p0; poly2 := pn.poly2;
              */
             poly1.add(ctrlPoints.get(0));
-            poly2.add(0, ctrlPoints.get(n));
+            poly2.add(0, ctrlPoints.get(ctrlPoints.size() - 1));
 
             /*
              * (2) compute q[i] = p[i] + u * (p[i + 1] - p[i]), where i = 0, 1,
              * ..., n - 1
              */
             List<Point> temp = new LinkedList<>();
-            while (!ctrlPoints.isEmpty()) {
-                temp.add(ctrlPoints.remove(0));
-            }
+            temp.addAll(ctrlPoints);
+            ctrlPoints.clear();
 
             for (int i = 0; i < n; i++) {
                 int x = (int) Math.round(temp.get(i).x
                         + u * (temp.get(i + 1).x - temp.get(i).x));
                 int y = (int) Math.round(temp.get(i).y
                         + u * (temp.get(i + 1).y - temp.get(i).y));
-                ctrlPoints.add(i, new Point(x, y));
+                ctrlPoints.add(new Point(x, y));
             }
 
             /*
              * (3) oneSubdivide(q, poly1, poly2, u)
              */
+
             oneSubdivide(ctrlPoints, poly1, poly2, u);
 
         }
@@ -123,14 +116,13 @@ public class SubdivisionDeCasteljau {
          * if m = 1 oneSubdivide(ctrlPoints, {}, {}, u)
          */
 
+        int n = ctrlPoints.size() - 1;
         oneSubdivide(ctrlPoints, new LinkedList<Point>(),
                 new LinkedList<Point>(), u);
-        int n = ctrlPoints.size() - 1;
 
         if (m != 1) {
 
             List<Point> temp = new LinkedList<>();
-
             while (ctrlPoints.size() > n + 1) {
                 temp.add(ctrlPoints.remove(n + 1));
             }
@@ -138,10 +130,7 @@ public class SubdivisionDeCasteljau {
 
             subdivide(ctrlPoints, m - 1, u);
             subdivide(temp, m - 1, u);
-
-            while (!temp.isEmpty()) {
-                ctrlPoints.add(temp.remove(0));
-            }
+            ctrlPoints.addAll(temp);
 
         }
     }
@@ -163,6 +152,7 @@ public class SubdivisionDeCasteljau {
             g2.drawLine(this.ctrlPoints.get(i).x, this.ctrlPoints.get(i).y,
                     this.ctrlPoints.get(i + 1).x, this.ctrlPoints.get(i + 1).y);
         }
+
     }
 
 }
