@@ -218,7 +218,14 @@ public class MainClass {
                 MainClass.this.curve
                         .changeCurveStatus(CurveType.QUADRICBSPLINE);
 
-                //TODO: update subdivision quadric b-spline with uniform knot vector.
+                PointsOperation.updatePoints(canvas.getGraphics(),
+                        MainClass.this.curve.controlPoints(),
+                        MainClass.this.curve.currentIndex(), canvas.getWidth(),
+                        canvas.getHeight());
+                if (MainClass.this.curve.controlPoints().size() > 1) {
+                    MainClass.this.curve.curveType().updateCurve(
+                            MainClass.this.curve, canvas.getGraphics());
+                }
 
             }
         });
@@ -339,9 +346,7 @@ public class MainClass {
                             .parseInt(MainClass.this.textField.getText()));
 
                     if (MainClass.this.curve
-                            .curveType() == CurveType.DECASTELJAU
-                            || MainClass.this.curve
-                                    .curveType() == CurveType.QUADRICBSPLINE) {
+                            .curveType() == CurveType.DECASTELJAU) {
 
                         PointsOperation.updatePoints(canvas.getGraphics(),
                                 MainClass.this.curve.controlPoints(),

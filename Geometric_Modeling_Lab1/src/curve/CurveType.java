@@ -68,8 +68,7 @@ public enum CurveType implements Operation {
 
         @Override
         public void updateCurve(List<Point> pt, Graphics g) {
-            // TODO Auto-generated method stub
-
+            // No code here
         }
 
     },
@@ -80,13 +79,14 @@ public enum CurveType implements Operation {
     QUADRICBSPLINE {
         @Override
         public void updateCurve(Curve curve, Graphics g) {
-            // TODO Auto-generated method stub
-
+            SubdivisionQuadricB c = new SubdivisionQuadricB(
+                    curve.controlPoints());
+            c.generateCurve(g);
         }
 
         @Override
         public void updateCurve(List<Point> pt, Graphics g) {
-            // TODO Auto-generated method stub
+            // No code here
 
         }
 
