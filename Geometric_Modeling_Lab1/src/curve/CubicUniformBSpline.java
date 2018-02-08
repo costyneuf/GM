@@ -19,11 +19,6 @@ public class CubicUniformBSpline {
     private static final double INCREMENT = 1E-3;
 
     /**
-     * The degree of B-Spline is 3.
-     */
-    private static final int D = 4;
-
-    /**
      * Store a copy of ctrlPoints list.
      */
     private List<Point> points = new LinkedList<>();
