@@ -105,15 +105,20 @@ public class MainClass {
         canvas.addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseDragged(MouseEvent arg0) {
-                MainClass.this.curve
-                        .editUpdate(new Point(arg0.getX(), arg0.getY()));
+                if (MainClass.this.curve.pointType() == PointType.EDIT) {
+                    MainClass.this.curve
+                            .editUpdate(new Point(arg0.getX(), arg0.getY()));
 
-                PointsOperation.updatePoints(canvas.getGraphics(),
-                        MainClass.this.curve.controlPoints(),
-                        MainClass.this.curve.currentIndex(), canvas.getWidth(),
-                        canvas.getHeight());
+                    PointsOperation.updatePoints(canvas.getGraphics(),
+                            MainClass.this.curve.controlPoints(),
+                            MainClass.this.curve.currentIndex(),
+                            canvas.getWidth(), canvas.getHeight());
+                }
 
-                //TODO: Update the curve.
+                if (MainClass.this.curve.controlPoints().size() > 1) {
+                    MainClass.this.curve.curveType().updateCurve(
+                            MainClass.this.curve, canvas.getGraphics());
+                }
 
             }
         });
@@ -192,7 +197,10 @@ public class MainClass {
                         MainClass.this.curve.currentIndex(), canvas.getWidth(),
                         canvas.getHeight());
 
-                //TODO: Update the curve.
+                if (MainClass.this.curve.controlPoints().size() > 1) {
+                    MainClass.this.curve.curveType().updateCurve(
+                            MainClass.this.curve, canvas.getGraphics());
+                }
 
             }
         });
@@ -210,7 +218,10 @@ public class MainClass {
                         MainClass.this.curve.currentIndex(), canvas.getWidth(),
                         canvas.getHeight());
 
-                //TODO: Update the curve.
+                if (MainClass.this.curve.controlPoints().size() > 1) {
+                    MainClass.this.curve.curveType().updateCurve(
+                            MainClass.this.curve, canvas.getGraphics());
+                }
 
             }
         });
