@@ -16,7 +16,7 @@ public class CubicUniformBSpline {
     /**
      * Initial value of u.
      */
-    private static final double INCREMENT = 0.01;
+    private static final double INCREMENT = 1E-3;
 
     /**
      * The degree of B-Spline is 3.
@@ -49,54 +49,31 @@ public class CubicUniformBSpline {
      */
 
     /**
-     * Create an interval array.
-     *
-     * @param n
-     * @return interval array
-     */
-    private static int[] interval(int n) {
-
-        int[] t = new int[n + 6];
-
-        for (int i = 3; i <= n + 2; i++) {
-            t[i] = i - 3;
-        }
-
-        t[0] = t[3];
-        t[1] = t[3];
-        t[2] = t[3];
-
-        t[n + 4] = t[n + 2];
-        t[n + 5] = t[n + 2];
-        t[n + 3] = t[n + 2];
-
-        return t;
-    }
-
-    /**
-     * Calculate the basis for each N(i,d)(u).
+     * Calculate the basis for each N(i,4)(u).
      *
      * @param i
-     * @param d
      * @param u
-     * @param t
-     * @return N(i,d)(u)
+     * @return
      */
-    private static double basis(int i, int d, double u, int[] t) {
+    private static double basis(int i, double u) {
 
         double result = 0;
 
-        /*
-         * Base cases
-         */
-        if (d == 1) {
-            result = (u >= t[i] && u < t[i + 1]) ? 1 : 0;
-
-        } else if (t[i + d - 1] != t[i] && t[i + d] != t[i + 1]) {
-            result = (u - t[i]) * basis(i, d - 1, u, t) / (t[i + d - 1] - t[i]);
-            result += (t[i + d] - u) * basis(i + 1, d - 1, u, t)
-                    / (t[i + d] - t[i + 1]);
-
+        switch (i) {
+            case 1:
+                result = 1 / 6.0 * (-u * u * u + 3 * u * u - 3 * u + 1);
+                break;
+            case 2:
+                result = 1 / 6.0 * (3 * u * u * u - 6 * u * u + 4);
+                break;
+            case 3:
+                result = 1 / 6.0 * (-3 * u * u * u + 3 * u * u + 3 * u + 1);
+                break;
+            case 4:
+                result = 1 / 6.0 * u * u * u;
+                break;
+            default:
+                break;
         }
 
         return result;
@@ -116,42 +93,45 @@ public class CubicUniformBSpline {
         g2.setColor(Color.WHITE);
 
         /*
-         * Initialize p1.
-         */
-        int p1X = this.points.get(1).x;
-        int p1Y = this.points.get(1).y;
-        /*
          * # ctrl points - 1
          */
         int n = this.points.size() - 1;
 
-        if (n < 2) {
+        if (n > 2) {
 
-            g2.drawLine(this.points.get(0).x, this.points.get(0).y, p1X, p1Y);
+            for (int i = 1; i <= n - 2; i++) {
 
-        } else {
+                Point[] pt = new Point[4];
+                pt[0] = this.points.get(i - 1);
+                pt[1] = this.points.get(i);
+                pt[2] = this.points.get(i + 1);
+                pt[3] = this.points.get(i + 2);
 
-            int[] t = interval(n);
+                double u = INCREMENT;
+                Point p = null;
+                while (u < 1) {
+                    double pX = 0, pY = 0;
 
-            double u = 0;
-            while (u < t[n + 3]) {
+                    for (int j = 1; j <= 4; j++) {
+                        pX += basis(j, u) * pt[j - 1].x;
+                        pY += basis(j, u) * pt[j - 1].y;
+                    }
 
-                double p2X = 0, p2Y = 0;
-
-                for (int i = 0; i <= n; i++) {
-                    p2X += (this.points.get(i).x * basis(i, D, u, t));
-                    p2Y += (this.points.get(i).y * basis(i, D, u, t));
+                    if (p != null) {
+                        g2.drawLine(p.x, p.y, (int) Math.round(pX),
+                                (int) Math.round(pY));
+                    }
+                    p = new Point((int) Math.round(pX), (int) Math.round(pY));
+                    u += INCREMENT;
                 }
-
-                if (u != 0) {
-                    g2.drawLine(p1X, p1Y, (int) Math.round(p2X),
-                            (int) Math.round(p2Y));
-                }
-                p1X = (int) Math.round(p2X);
-                p1Y = (int) Math.round(p2Y);
-
-                u += INCREMENT;
             }
+
+        } else if (n == 2) {
+            BezierCurve c = new BezierCurve(this.points);
+            c.generateCurve(g);
+        } else if (n == 1) {
+            g2.drawLine(this.points.get(0).x, this.points.get(0).y,
+                    this.points.get(1).x, this.points.get(1).y);
         }
 
     }
