@@ -1,5 +1,5 @@
 /**
- *
+ *  Class for generating Bezier Curve.
  */
 package curve;
 
@@ -21,6 +21,9 @@ public class BezierCurve {
      * Private members.
      */
 
+    /**
+     * Initial value of u.
+     */
     private static final double INITIAL_U = 1E-2;
 
     /**
@@ -89,15 +92,29 @@ public class BezierCurve {
      * Public methods.
      */
 
+    /**
+     * Generate Bezier Curve.
+     *
+     * @param g
+     */
     public void generateCurve(Graphics g) {
 
+        /*
+         * Set up color.
+         */
         Graphics2D g2 = (Graphics2D) g;
         g2.setColor(Color.WHITE);
 
+        /*
+         * Initialize p1.
+         */
         int p1X = this.points.get(0).x;
         int p1Y = this.points.get(0).y;
         int n = this.points.size();
 
+        /*
+         * Deal with real curves only.
+         */
         if (n > 2) {
 
             double j = INITIAL_U;
@@ -115,9 +132,14 @@ public class BezierCurve {
                         (int) Math.round(p2Y));
                 p1X = (int) Math.round(p2X);
                 p1Y = (int) Math.round(p2Y);
+
                 j += INITIAL_U;
             }
         }
+
+        /*
+         * Connect the end point with the last but one point in curve.
+         */
         g2.drawLine(p1X, p1Y, this.points.get(n - 1).x,
                 this.points.get(n - 1).y);
 
