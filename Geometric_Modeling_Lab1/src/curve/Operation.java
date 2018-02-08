@@ -35,24 +35,4 @@ public interface Operation {
      */
     void updateCurve(Curve curve, Graphics g);
 
-    /**
-     * Change the point status in {@code curve}.
-     *
-     * @param curve
-     *            the curve needing the change of point status
-     * @param type
-     *            the type of points in curve
-     */
-    void setPointStatus(Curve curve, Operation type);
-
-    /**
-     * Change the curve status in {@code curve}.
-     *
-     * @param curve
-     *            the curve needing the change of curve status
-     * @param type
-     *            the type of the curve
-     */
-    void setCurveStatus(Curve curve, Operation type);
-
 }
