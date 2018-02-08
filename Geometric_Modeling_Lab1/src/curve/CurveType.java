@@ -12,7 +12,9 @@ public enum CurveType implements Operation {
     BEZIER {
         @Override
         public void updateCurve(Curve curve, Graphics g) {
-            // TODO Auto-generated method stub
+
+            BezierCurve c = new BezierCurve(curve.controlPoints());
+            c.generateCurve(g);
 
         }
 
