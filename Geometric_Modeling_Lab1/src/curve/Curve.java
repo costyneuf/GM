@@ -139,17 +139,44 @@ public class Curve {
     }
 
     /**
+     * Report the current index of point selected.
+     *
+     * @return current index
+     */
+    public int currentIndex() {
+        return this.currentIndex;
+    }
+
+    /**
      * Restore the curve.
      */
     public void clear() {
         this.createNewRep();
     }
 
+    /**
+     * Delete the selected point.
+     */
     public void delete() {
+
+        if (this.currentIndex >= 0
+                && this.insertPoints.size() > this.currentIndex) {
+            this.insertPoints.remove(this.currentIndex);
+            this.currentIndex--;
+        }
 
     }
 
+    /**
+     * Duplicate the selected point.
+     */
     public void duplicate() {
+
+        if (this.currentIndex >= 0
+                && this.insertPoints.size() > this.currentIndex) {
+            this.insertPoints.add(this.currentIndex + 1,
+                    this.insertPoints.get(this.currentIndex));
+        }
 
     }
 
