@@ -228,26 +228,6 @@ public class MainClass {
         delete.setBounds(34, 520, 277, 25);
         this.frame.getContentPane().add(delete);
 
-        JButton clear = new JButton("Clear");
-        clear.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent arg0) {
-                /*
-                 * Clear linked list.
-                 */
-                MainClass.this.curve.clear();
-
-                /*
-                 * Clear canvas.
-                 */
-                PointsOperation.updatePoints(canvas.getGraphics(),
-                        MainClass.this.curve.controlPoints(), -1,
-                        canvas.getWidth(), canvas.getHeight());
-            }
-        });
-        clear.setBounds(34, 560, 277, 25);
-        this.frame.getContentPane().add(clear);
-
         JRadioButton uniform_sub_quadric_bSpline = new JRadioButton(
                 "Uniform Subdivision Quadric B-Spline");
         uniform_sub_quadric_bSpline.addMouseListener(new MouseAdapter() {
@@ -311,5 +291,33 @@ public class MainClass {
         bezier_curve.setBounds(34, 90, 324, 23);
         this.frame.getContentPane().add(bezier_curve);
         this.curveChoice.add(bezier_curve);
+
+        JButton clear = new JButton("Clear");
+        clear.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent arg0) {
+                /*
+                 * Clear linked list.
+                 */
+                MainClass.this.curve.clear();
+
+                /*
+                 * Clear canvas.
+                 */
+                PointsOperation.updatePoints(canvas.getGraphics(),
+                        MainClass.this.curve.controlPoints(), -1,
+                        canvas.getWidth(), canvas.getHeight());
+
+                /*
+                 * Reset buttons.
+                 */
+                add_point.setSelected(true);
+                bezier_curve.setSelected(true);
+
+            }
+        });
+        clear.setBounds(34, 560, 277, 25);
+        this.frame.getContentPane().add(clear);
+
     }
 }
