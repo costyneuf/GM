@@ -3,6 +3,7 @@ import java.awt.EventQueue;
 import java.awt.Graphics2D;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
@@ -11,8 +12,6 @@ import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.UIManager;
-
-import org.eclipse.swt.graphics.Point;
 
 public class MainClass {
 
@@ -95,14 +94,20 @@ public class MainClass {
          * displayed.
          */
         Canvas canvas = new Canvas();
+        canvas.addMouseMotionListener(new MouseMotionAdapter() {
+            @Override
+            public void mouseDragged(MouseEvent arg0) {
+
+                //TODO: Call a method which will update linked list here.
+
+                //TODO: Call an update method here.
+            }
+        });
         canvas.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent arg0) {
 
-                // Add a point into the linked list.
-                PointsOperation.addPoints(MainClass.this.curve,
-                        new Point(arg0.getX(), arg0.getY()),
-                        canvas.getGraphics());
+                //TODO: Call an update method here.
 
             }
 
@@ -113,23 +118,70 @@ public class MainClass {
         this.frame.getContentPane().add(canvas);
 
         JRadioButton add_point = new JRadioButton("Add points");
+        add_point.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+
+                //TODO: Reset the point status to ADD.
+
+            }
+        });
         add_point.setSelected(true);
         add_point.setBounds(34, 380, 149, 23);
         this.frame.getContentPane().add(add_point);
+        this.pointChoice.add(add_point);
 
         JRadioButton insert_point = new JRadioButton("Insert before selected");
+        insert_point.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+
+                //TODO: Reset the point status to INSERT.
+
+            }
+        });
         insert_point.setBounds(34, 410, 224, 23);
         this.frame.getContentPane().add(insert_point);
+        this.pointChoice.add(insert_point);
 
         JRadioButton edit_point = new JRadioButton("Edit points");
+        edit_point.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+
+                //TODO: Reset the point status to EDIT.
+
+            }
+        });
         edit_point.setBounds(34, 440, 149, 23);
         this.frame.getContentPane().add(edit_point);
+        this.pointChoice.add(edit_point);
 
         JButton duplicate = new JButton("Duplicate at selected");
+        duplicate.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+
+                //TODO: Update the linked list.
+
+                //TODO: Update the curve.
+
+            }
+        });
         duplicate.setBounds(34, 480, 277, 25);
         this.frame.getContentPane().add(duplicate);
 
         JButton delete = new JButton("Delete selected");
+        delete.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+
+                //TODO: Update the linked list.
+
+                //TODO: Update the curve.
+
+            }
+        });
         delete.setBounds(34, 520, 277, 25);
         this.frame.getContentPane().add(delete);
 
@@ -137,6 +189,12 @@ public class MainClass {
         clear.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent arg0) {
+
+                //TODO: Update the linked list.
+
+                //TODO: Update the curve.
+
+                //TODO: Rewrite the following code into  PointsOperation.
                 MainClass.this.curve.clear();
                 Graphics2D g2 = (Graphics2D) canvas.getGraphics();
                 g2.setColor(UIManager.getColor("ComboBox.selectionForeground"));
@@ -148,22 +206,55 @@ public class MainClass {
 
         JRadioButton uniform_sub_quadric_bSpline = new JRadioButton(
                 "Uniform Subdivision Quadric B-Spline");
+        uniform_sub_quadric_bSpline.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+
+                //TODO: Change curve status and update curve.
+
+            }
+        });
         uniform_sub_quadric_bSpline.setBounds(34, 270, 324, 23);
         this.frame.getContentPane().add(uniform_sub_quadric_bSpline);
+        this.curveChoice.add(uniform_sub_quadric_bSpline);
 
         JRadioButton deCasteljau_sub_curve = new JRadioButton(
                 "de Casteljau Subdivision Curve");
+        deCasteljau_sub_curve.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                //TODO: Change curve status and update curve.
+
+            }
+        });
         deCasteljau_sub_curve.setBounds(34, 210, 324, 23);
         this.frame.getContentPane().add(deCasteljau_sub_curve);
+        this.curveChoice.add(deCasteljau_sub_curve);
 
         JRadioButton uniform_cubic_bSpline = new JRadioButton(
                 "Uniform Cubic B-Spline");
+        uniform_cubic_bSpline.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                //TODO: Change curve status and update curve.
+
+            }
+        });
         uniform_cubic_bSpline.setBounds(34, 150, 324, 23);
         this.frame.getContentPane().add(uniform_cubic_bSpline);
+        this.curveChoice.add(uniform_cubic_bSpline);
 
         JRadioButton bezier_curve = new JRadioButton("Bezier Curve");
+        bezier_curve.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+
+                //TODO: Change curve status and update curve.
+            }
+        });
         bezier_curve.setSelected(true);
         bezier_curve.setBounds(34, 90, 324, 23);
         this.frame.getContentPane().add(bezier_curve);
+        this.curveChoice.add(bezier_curve);
     }
 }
