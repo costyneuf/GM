@@ -13,7 +13,10 @@ import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.UIManager;
 
+import org.eclipse.swt.graphics.Point;
+
 import curve.Curve;
+import curve.PointType;
 import curve.PointsOperation;
 
 public class MainClass {
@@ -101,15 +104,27 @@ public class MainClass {
         canvas.addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseDragged(MouseEvent arg0) {
+                MainClass.this.curve
+                        .editUpdate(new Point(arg0.getX(), arg0.getY()));
 
-                //TODO: Call a method which will update linked list here.
+                PointsOperation.updatePoints(canvas.getGraphics(),
+                        MainClass.this.curve.controlPoints(),
+                        MainClass.this.curve.currentIndex(), canvas.getWidth(),
+                        canvas.getHeight());
 
-                //TODO: Call an update method here.
             }
         });
         canvas.addMouseListener(new MouseAdapter() {
+
             @Override
             public void mouseClicked(MouseEvent arg0) {
+
+                MainClass.this.curve.updateIndexAndList(
+                        new Point(arg0.getX(), arg0.getY()));
+                PointsOperation.updatePoints(canvas.getGraphics(),
+                        MainClass.this.curve.controlPoints(),
+                        MainClass.this.curve.currentIndex(), canvas.getWidth(),
+                        canvas.getHeight());
 
                 //TODO: Call an update method here.
 
@@ -126,7 +141,7 @@ public class MainClass {
             @Override
             public void mouseClicked(MouseEvent e) {
 
-                //TODO: Reset the point status to ADD.
+                PointType.setPointStatus(MainClass.this.curve, PointType.ADD);
 
             }
         });
@@ -140,7 +155,8 @@ public class MainClass {
             @Override
             public void mouseClicked(MouseEvent e) {
 
-                //TODO: Reset the point status to INSERT.
+                PointType.setPointStatus(MainClass.this.curve,
+                        PointType.INSERT);
 
             }
         });
@@ -153,7 +169,7 @@ public class MainClass {
             @Override
             public void mouseClicked(MouseEvent e) {
 
-                //TODO: Reset the point status to EDIT.
+                PointType.setPointStatus(MainClass.this.curve, PointType.EDIT);
 
             }
         });
@@ -166,7 +182,11 @@ public class MainClass {
             @Override
             public void mouseClicked(MouseEvent e) {
 
-                //TODO: Update the linked list.
+                MainClass.this.curve.duplicate();
+                PointsOperation.updatePoints(canvas.getGraphics(),
+                        MainClass.this.curve.controlPoints(),
+                        MainClass.this.curve.currentIndex(), canvas.getWidth(),
+                        canvas.getHeight());
 
                 //TODO: Update the curve.
 
@@ -180,7 +200,11 @@ public class MainClass {
             @Override
             public void mouseClicked(MouseEvent e) {
 
-                //TODO: Update the linked list.
+                MainClass.this.curve.delete();
+                PointsOperation.updatePoints(canvas.getGraphics(),
+                        MainClass.this.curve.controlPoints(),
+                        MainClass.this.curve.currentIndex(), canvas.getWidth(),
+                        canvas.getHeight());
 
                 //TODO: Update the curve.
 

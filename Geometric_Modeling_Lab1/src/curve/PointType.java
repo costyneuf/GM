@@ -17,34 +17,28 @@ public enum PointType implements Operation {
      * Add a point after the current index.
      */
     ADD {
-        @Override
-        public void updatePointsList(Point point, Curve curve) {
-            // TODO Auto-generated method stub
 
-        }
     },
 
     /**
      * Insert a point before the current index.
      */
     INSERT {
-        @Override
-        public void updatePointsList(Point point, Curve curve) {
-            // TODO Auto-generated method stub
 
-        }
     },
 
     /**
      * Edit a point at the current index.
      */
     EDIT {
-        @Override
-        public void updatePointsList(Point point, Curve curve) {
-            // TODO Auto-generated method stub
 
-        }
     };
+
+    @Override
+    public void updatePointsList(Point point, Curve curve) {
+        curve.insert2InsertPoints(point);
+
+    }
 
     @Override
     public void updateCurve(Curve curve, Graphics g) {
@@ -61,7 +55,7 @@ public enum PointType implements Operation {
      *            the type of points in curve
      */
     public static void setPointStatus(Curve curve, Operation type) {
-        // TODO: set up points' current status
+        curve.changePointStatus(type);
     }
 
 }

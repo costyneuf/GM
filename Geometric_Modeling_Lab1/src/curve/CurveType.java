@@ -69,7 +69,7 @@ public enum CurveType implements Operation {
      *            the type of the curve
      */
     public static void setCurveStatus(Curve curve, Operation type) {
-        // TODO set up a curve's current status
+        curve.changeCurveStatus(type);
 
     }
 

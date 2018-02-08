@@ -19,6 +19,8 @@ public class Curve {
      * Private members.
      */
 
+    private static final int RELATIVEERROR = 100;
+
     /**
      * Number of subdivisions given by users.
      */
@@ -116,7 +118,12 @@ public class Curve {
 
         } else if (this.pointType == PointType.EDIT) {
 
-            this.currentIndex = this.insertPoints.indexOf(point);
+            for (Point p : this.insertPoints) {
+                if ((p.x - point.x) * (p.x - point.x)
+                        + (p.y - point.y) * (p.y - point.y) <= RELATIVEERROR) {
+                    this.currentIndex = this.insertPoints.indexOf(p);
+                }
+            }
 
         } else if (this.pointType == PointType.INSERT) {
 
@@ -125,6 +132,7 @@ public class Curve {
              */
 
             this.insertPoints.add(this.currentIndex, point);
+            this.currentIndex++;
         }
         return this.currentIndex;
     }
@@ -136,6 +144,24 @@ public class Curve {
      */
     public List<Point> controlPoints() {
         return this.insertPoints;
+    }
+
+    /**
+     * Update curve status.
+     *
+     * @param curveStatus
+     */
+    public void changeCurveStatus(Operation curveStatus) {
+        this.curveType = curveStatus;
+    }
+
+    /**
+     * Update point status.
+     *
+     * @param pointStatus
+     */
+    public void changePointStatus(Operation pointStatus) {
+        this.pointType = pointStatus;
     }
 
     /**
@@ -178,6 +204,11 @@ public class Curve {
                     this.insertPoints.get(this.currentIndex));
         }
 
+    }
+
+    public void editUpdate(Point point) {
+        this.insertPoints.remove(this.currentIndex);
+        this.insertPoints.add(this.currentIndex, point);
     }
 
 }
