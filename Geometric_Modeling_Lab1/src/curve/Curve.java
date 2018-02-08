@@ -156,6 +156,15 @@ public class Curve {
     }
 
     /**
+     * Return the type of current curve.
+     * 
+     * @return type of curve
+     */
+    public Operation curveType() {
+        return this.curveType;
+    }
+
+    /**
      * Update point status.
      *
      * @param pointStatus
