@@ -17,7 +17,6 @@ import org.eclipse.swt.graphics.Point;
 
 import curve.Curve;
 import curve.CurveType;
-import curve.Operation;
 import curve.PointType;
 import curve.PointsOperation;
 
@@ -28,7 +27,6 @@ public class MainClass {
     private JTextField textField;
     private ButtonGroup curveChoice = new ButtonGroup();
     private ButtonGroup pointChoice = new ButtonGroup();
-    private Operation last = CurveType.BEZIER;
 
     /**
      * Launch the application.
@@ -239,19 +237,15 @@ public class MainClass {
             @Override
             public void mouseClicked(MouseEvent e) {
 
-                if (MainClass.this.last == CurveType.BEZIER) {
-                    MainClass.this.last = MainClass.this.curve
-                            .changeCurveStatus(CurveType.DECASTELJAU);
-                }
+                MainClass.this.curve.changeCurveStatus(CurveType.DECASTELJAU);
 
-                if (MainClass.this.curve.curveType() == CurveType.DECASTELJAU) {
-                    PointsOperation.updatePoints(canvas.getGraphics(),
-                            MainClass.this.curve.controlPoints(),
-                            MainClass.this.curve.currentIndex(),
-                            canvas.getWidth(), canvas.getHeight());
+                PointsOperation.updatePoints(canvas.getGraphics(),
+                        MainClass.this.curve.controlPoints(),
+                        MainClass.this.curve.currentIndex(), canvas.getWidth(),
+                        canvas.getHeight());
+                if (MainClass.this.curve.controlPoints().size() > 1) {
                     MainClass.this.curve.curveType().updateCurve(
                             MainClass.this.curve, canvas.getGraphics());
-
                 }
 
             }

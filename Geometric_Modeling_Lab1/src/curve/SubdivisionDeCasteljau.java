@@ -3,9 +3,6 @@
  */
 package curve;
 
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -20,8 +17,6 @@ public class SubdivisionDeCasteljau {
     /*
      * Private members.
      */
-
-    private static final double INCREMENT = 1E-2;
 
     /**
      * Store a copy of ctrlPoints list.
@@ -75,7 +70,7 @@ public class SubdivisionDeCasteljau {
          */
         if (n == 0) {
 
-            Point p0 = ctrlPoints.remove(0);
+            Point p0 = ctrlPoints.remove(n);
             while (!poly1.isEmpty()) {
                 ctrlPoints.add(poly1.remove(0));
             }
@@ -106,7 +101,7 @@ public class SubdivisionDeCasteljau {
                         + u * (temp.get(i + 1).x - temp.get(i).x));
                 int y = (int) Math.round(temp.get(i).y
                         + u * (temp.get(i + 1).y - temp.get(i).y));
-                ctrlPoints.add(new Point(x, y));
+                ctrlPoints.add(i, new Point(x, y));
             }
 
             /*
@@ -130,8 +125,9 @@ public class SubdivisionDeCasteljau {
         if (m != 1) {
 
             List<Point> temp = new LinkedList<>();
-            while (ctrlPoints.size() != n + 1) {
-                temp.add(ctrlPoints.remove(ctrlPoints.size() - 1));
+
+            while (ctrlPoints.size() > n + 1) {
+                temp.add(ctrlPoints.remove(n + 1));
             }
             temp.add(0, ctrlPoints.get(n));
 
@@ -148,24 +144,10 @@ public class SubdivisionDeCasteljau {
     /*
      * Public methods.
      */
-    public void generateCurve(Graphics g) {
-
-        Graphics2D g2 = (Graphics2D) g;
-        g2.setColor(Color.PINK);
-
-        double u = INCREMENT;
+    public List<Point> updatePoints(double u) {
 
         subdivide(this.ctrlPoints, this.subdivisions, u);
-
-        for (int i = 0; i < this.ctrlPoints.size() - 1; i++) {
-            g2.drawLine(this.ctrlPoints.get(i).x, this.ctrlPoints.get(i).y,
-                    this.ctrlPoints.get(i + 1).x, this.ctrlPoints.get(i + 1).y);
-
-        }
-
-        if (this.ctrlPoints.size() > 1) {
-            CurveType.BEZIER.updateCurve(this.ctrlPoints, g);
-        }
+        return this.ctrlPoints;
     }
 
 }
