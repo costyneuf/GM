@@ -1,4 +1,5 @@
 package curve;
+
 import java.util.LinkedList;
 import java.util.List;
 
@@ -14,41 +15,69 @@ import org.eclipse.swt.graphics.Point;
  */
 public class Curve {
 
+    /*
+     * Private members.
+     */
+
     /**
      * Number of subdivisions given by users.
      */
     private int subdivisions;
 
     /**
-     * Next index of point selected in insertPoints list.
+     * Current index of point selected in insertPoints list. If the list is
+     * empty, then the index is -1.
      */
-    private int nextIndexOfInput;
+    private int currentIndex;
 
     /**
      * Store all points inserted by sequence.
      */
     private List<Point> insertPoints;
 
-    private void newRep() {
+    /**
+     * Default type of curve is BEZIER.
+     */
+    private Operation curveType;
+
+    /**
+     * Default type of point is add after the current index.
+     */
+    private Operation pointType;
+
+    /*
+     * Private methods.
+     */
+
+    /**
+     * Create a new representation for Curve.
+     */
+    private void createNewRep() {
         this.insertPoints = new LinkedList<>();
         this.subdivisions = 4; // default subdivisions is 4
-        this.nextIndexOfInput = 0;
+        this.currentIndex = -1;
+        this.curveType = CurveType.BEZIER;
+        this.pointType = PointType.ADD;
     }
 
     /**
      * Constructor method.
      */
     public Curve() {
-        this.newRep();
+        this.createNewRep();
     }
 
+    /*
+     * Public methods.
+     */
+
     /**
-     * Insert points into insertPoints.
+     * Insert points into insertPoints with the specific index.
      *
      * @param point
      */
     public void insert2InsertPoints(Point point) {
-        this.insertPoints.add(point);
+        this.insertPoints.add(this.currentIndex, point);
     }
 
     /**
@@ -70,17 +99,19 @@ public class Curve {
     }
 
     /**
-     * Update index of point selected in linked list.
+     * Update index of point selected in linked list. If the type of points is
+     * ADD, then currentIndex++; else if the type of points is EDIT, then
+     * currentIndex = index of {@point}.
      *
-     * @param index
-     *
+     * @param point
+     *            point will be added, deleted, or changed
      */
-    public void updateNextIndexOfInput(int index) {
-        if (index != -1) {
-            // Simply add a point
-            this.nextIndexOfInput = index;
-        } else {
-            this.nextIndexOfInput++;
+    public void updateIndex(Point point) {
+
+        if (this.pointType == PointType.ADD) {
+            this.currentIndex++;
+        } else if (this.pointType == PointType.EDIT) {
+            this.currentIndex = this.insertPoints.indexOf(point);
         }
     }
 
@@ -94,16 +125,10 @@ public class Curve {
     }
 
     /**
-     * Report the last point inserted before inserting a new point.
-     *
-     * @return
+     * Restore the curve.
      */
-    public Point lastPointInserted() {
-        return this.insertPoints.get(this.insertPoints.size() - 2);
-    }
-
     public void clear() {
-        this.newRep();
+        this.createNewRep();
     }
 
 }
