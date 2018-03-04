@@ -50,45 +50,6 @@ public enum CurveType implements Operation {
 
         }
 
-    },
-
-    /**
-     * Subdivision curves using repeated de Casteljau method.
-     */
-    DECASTELJAU {
-        @Override
-        public void updateCurve(Curve curve, Graphics g) {
-
-            SubdivisionDeCasteljau c = new SubdivisionDeCasteljau(
-                    curve.controlPoints(), curve.getSubdivision());
-            c.updatePoints(g);
-
-        }
-
-        @Override
-        public void updateCurve(List<Point3i> pt, Graphics g) {
-            // No code here
-        }
-
-    },
-
-    /**
-     * Subdivision Quadric B-Spline with uniform knot vector.
-     */
-    QUADRICBSPLINE {
-        @Override
-        public void updateCurve(Curve curve, Graphics g) {
-            SubdivisionQuadricB c = new SubdivisionQuadricB(
-                    curve.controlPoints());
-            c.generateCurve(g);
-        }
-
-        @Override
-        public void updateCurve(List<Point3i> pt, Graphics g) {
-            // No code here
-
-        }
-
     };
 
     @Override
@@ -101,7 +62,7 @@ public enum CurveType implements Operation {
      * Change the curve status in {@code curve}.
      *
      * the curve needing the change of curve status
-     * 
+     *
      * @param type
      *            the type of the curve
      */

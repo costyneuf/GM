@@ -12,7 +12,6 @@ import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JRadioButton;
 import javax.swing.JSlider;
-import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.UIManager;
 import javax.vecmath.Point3i;
@@ -28,7 +27,6 @@ public class MainClass {
 
     private Curve curve = new Curve();
     protected JFrame frmCseGeometric;
-    private JTextField textField;
     private ButtonGroup curveChoice = new ButtonGroup();
     private ButtonGroup pointChoice = new ButtonGroup();
     private ButtonGroup surfaceChoice = new ButtonGroup();
@@ -53,19 +51,6 @@ public class MainClass {
         this.frmCseGeometric.setBounds(100, 100, 1264, 847);
         this.frmCseGeometric.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.frmCseGeometric.getContentPane().setLayout(null);
-
-        JTextPane Text1 = new JTextPane();
-        Text1.setBackground(UIManager.getColor("Button.background"));
-        Text1.setText("Subdivision Iterations:");
-        Text1.setBounds(34, 345, 144, 21);
-        this.frmCseGeometric.getContentPane().add(Text1);
-
-        this.textField = new JTextField();
-        this.textField.setText("4");
-        this.textField.setToolTipText("");
-        this.textField.setBounds(180, 345, 40, 25);
-        this.frmCseGeometric.getContentPane().add(this.textField);
-        this.textField.setColumns(10);
 
         /*
          * Set up a canvas where the points will be input and the curve will be
@@ -113,36 +98,6 @@ public class MainClass {
             }
 
         });
-        JButton refreshButton = new JButton("Refresh");
-        refreshButton.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                try {
-                    MainClass.this.curve.changeSubdivision(Integer
-                            .parseInt(MainClass.this.textField.getText()));
-
-                    if (MainClass.this.curve
-                            .curveType() == CurveType.DECASTELJAU) {
-
-                        PointsOperation.updatePoints(canvas.getGraphics(),
-                                MainClass.this.curve.controlPoints(),
-                                MainClass.this.curve.currentIndex(),
-                                canvas.getWidth(), canvas.getHeight());
-
-                        MainClass.this.curve.curveType().updateCurve(
-                                MainClass.this.curve, canvas.getGraphics());
-
-                    }
-
-                } catch (NumberFormatException e1) {
-
-                } catch (NullPointerException e2) {
-
-                }
-            }
-        });
-        refreshButton.setBounds(225, 345, 95, 25);
-        this.frmCseGeometric.getContentPane().add(refreshButton);
         canvas.setBackground(
                 UIManager.getColor("ComboBox.selectionForeground"));
         canvas.setBounds(364, 57, 869, 715);
@@ -230,54 +185,6 @@ public class MainClass {
         });
         delete.setBounds(34, 510, 277, 25);
         this.frmCseGeometric.getContentPane().add(delete);
-
-        JRadioButton uniform_sub_quadric_bSpline = new JRadioButton(
-                "Uniform Subdivision Quadric B-Spline");
-        uniform_sub_quadric_bSpline.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-
-                MainClass.this.curve
-                        .changeCurveStatus(CurveType.QUADRICBSPLINE);
-
-                PointsOperation.updatePoints(canvas.getGraphics(),
-                        MainClass.this.curve.controlPoints(),
-                        MainClass.this.curve.currentIndex(), canvas.getWidth(),
-                        canvas.getHeight());
-                if (MainClass.this.curve.controlPoints().size() > 1) {
-                    MainClass.this.curve.curveType().updateCurve(
-                            MainClass.this.curve, canvas.getGraphics());
-                }
-
-            }
-        });
-
-        uniform_sub_quadric_bSpline.setBounds(34, 150, 324, 23);
-        this.frmCseGeometric.getContentPane().add(uniform_sub_quadric_bSpline);
-        this.curveChoice.add(uniform_sub_quadric_bSpline);
-
-        JRadioButton deCasteljau_sub_curve = new JRadioButton(
-                "de Casteljau Subdivision Curve");
-        deCasteljau_sub_curve.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-
-                MainClass.this.curve.changeCurveStatus(CurveType.DECASTELJAU);
-
-                PointsOperation.updatePoints(canvas.getGraphics(),
-                        MainClass.this.curve.controlPoints(),
-                        MainClass.this.curve.currentIndex(), canvas.getWidth(),
-                        canvas.getHeight());
-                if (MainClass.this.curve.controlPoints().size() > 1) {
-                    MainClass.this.curve.curveType().updateCurve(
-                            MainClass.this.curve, canvas.getGraphics());
-                }
-
-            }
-        });
-        deCasteljau_sub_curve.setBounds(34, 130, 324, 23);
-        this.frmCseGeometric.getContentPane().add(deCasteljau_sub_curve);
-        this.curveChoice.add(deCasteljau_sub_curve);
 
         JRadioButton uniform_cubic_bSpline = new JRadioButton(
                 "Uniform Cubic B-Spline");
@@ -432,17 +339,13 @@ public class MainClass {
                 /*
                  * Enable all curve choices
                  */
-                MainClass.this.textField.setEnabled(true);
                 add_point.setEnabled(true);
                 insert_point.setEnabled(true);
                 edit_point.setEnabled(true);
                 duplicate.setEnabled(true);
                 delete.setEnabled(true);
-                uniform_sub_quadric_bSpline.setEnabled(true);
-                deCasteljau_sub_curve.setEnabled(true);
                 uniform_cubic_bSpline.setEnabled(true);
                 bezier_curve.setEnabled(true);
-                refreshButton.setEnabled(true);
 
                 /*
                  * Disable all surface or solid choices
@@ -466,17 +369,13 @@ public class MainClass {
                 /*
                  * Disable all curve choices
                  */
-                MainClass.this.textField.setEnabled(false);
                 add_point.setEnabled(false);
                 insert_point.setEnabled(false);
                 edit_point.setEnabled(false);
                 duplicate.setEnabled(false);
                 delete.setEnabled(false);
-                uniform_sub_quadric_bSpline.setEnabled(false);
-                deCasteljau_sub_curve.setEnabled(false);
                 uniform_cubic_bSpline.setEnabled(false);
                 bezier_curve.setEnabled(false);
-                refreshButton.setEnabled(false);
 
                 /*
                  * Enable all surface or solid choices
