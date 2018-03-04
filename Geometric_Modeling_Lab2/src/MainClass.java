@@ -5,6 +5,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 
+import javax.media.j3d.Canvas3D;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -15,6 +16,8 @@ import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.UIManager;
 import javax.vecmath.Point3i;
+
+import com.sun.j3d.utils.universe.SimpleUniverse;
 
 import curve.Curve;
 import curve.CurveType;
@@ -68,7 +71,8 @@ public class MainClass {
          * Set up a canvas where the points will be input and the curve will be
          * displayed.
          */
-        Canvas canvas = new Canvas();
+        Canvas canvas = new Canvas3D(
+                SimpleUniverse.getPreferredConfiguration());
 
         canvas.addMouseMotionListener(new MouseMotionAdapter() {
             @Override
