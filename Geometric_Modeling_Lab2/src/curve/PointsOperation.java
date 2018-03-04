@@ -20,7 +20,7 @@ public final class PointsOperation {
     /**
      * The radius of each point painted on canvas.
      */
-    private static final int RADIUS = 6;
+    private static final int RADIUS = 7;
 
     /**
      * Private constructor avoids class being instantiated.
@@ -54,6 +54,10 @@ public final class PointsOperation {
 
             g2.drawOval(p.x, p.y, RADIUS, RADIUS);
         }
+
+        g2.setColor(Color.RED);
+        g2.drawString("Max # of points for Bezier Curve is 21", 20, 20);
+        g2.drawString("x-y plane", 20, 310);
 
     }
 
@@ -94,18 +98,20 @@ public final class PointsOperation {
      * @param width
      * @param height
      */
-    public static void updatePoints(Graphics g, List<Point3i> ctrlPoints,
-            int currentIndex, int width, int height) {
+    public static void updatePoints(List<Point3i> ctrlPoints, int currentIndex,
+            int width, int height, Graphics... g) {
 
-        clearCanvas(g, width, height);
+        for (int i = 0; i < g.length; i++) {
+            clearCanvas(g[i], width, height);
+        }
 
         if (ctrlPoints.size() > 0) {
 
-            paintPoints(g, ctrlPoints, currentIndex);
+            paintPoints(g[0], ctrlPoints, currentIndex);
             if (ctrlPoints.size() > 1) {
 
                 for (int i = 0; i < ctrlPoints.size() - 1; i++) {
-                    connectedPoints(g, ctrlPoints.get(i),
+                    connectedPoints(g[0], ctrlPoints.get(i),
                             ctrlPoints.get(i + 1));
                 }
             }

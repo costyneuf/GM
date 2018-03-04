@@ -26,13 +26,13 @@ import curve.PointsOperation;
 public class MainClass {
 
     private Curve curve = new Curve();
-    protected JFrame frmCseGeometric;
     private ButtonGroup curveChoice = new ButtonGroup();
     private ButtonGroup pointChoice = new ButtonGroup();
     private ButtonGroup surfaceChoice = new ButtonGroup();
-
     private boolean outputASCII = false;
     private int numberOfSlices;
+
+    protected JFrame frmCseGeometric;
 
     /**
      * Create the application.
@@ -66,10 +66,11 @@ public class MainClass {
                     MainClass.this.curve.editUpdate(
                             new Point3i(arg0.getX(), arg0.getY(), 0));
 
-                    PointsOperation.updatePoints(canvas.getGraphics(),
+                    PointsOperation.updatePoints(
                             MainClass.this.curve.controlPoints(),
                             MainClass.this.curve.currentIndex(),
-                            canvas.getWidth(), canvas.getHeight());
+                            canvas.getWidth(), canvas.getHeight(),
+                            canvas.getGraphics());
                 }
 
                 if (MainClass.this.curve.controlPoints().size() > 1) {
@@ -86,10 +87,10 @@ public class MainClass {
 
                 MainClass.this.curve.updateIndexAndList(
                         new Point3i(arg0.getX(), arg0.getY(), 0));
-                PointsOperation.updatePoints(canvas.getGraphics(),
+                PointsOperation.updatePoints(
                         MainClass.this.curve.controlPoints(),
                         MainClass.this.curve.currentIndex(), canvas.getWidth(),
-                        canvas.getHeight());
+                        canvas.getHeight(), canvas.getGraphics());
                 if (MainClass.this.curve.controlPoints().size() > 1) {
                     MainClass.this.curve.curveType().updateCurve(
                             MainClass.this.curve, canvas.getGraphics());
@@ -100,7 +101,7 @@ public class MainClass {
         });
         canvas.setBackground(
                 UIManager.getColor("ComboBox.selectionForeground"));
-        canvas.setBounds(364, 57, 869, 715);
+        canvas.setBounds(364, 57, 850, 350);
         this.frmCseGeometric.getContentPane().add(canvas);
 
         JRadioButton add_point = new JRadioButton("Add points");
@@ -150,10 +151,10 @@ public class MainClass {
             public void mouseClicked(MouseEvent e) {
 
                 MainClass.this.curve.duplicate();
-                PointsOperation.updatePoints(canvas.getGraphics(),
+                PointsOperation.updatePoints(
                         MainClass.this.curve.controlPoints(),
                         MainClass.this.curve.currentIndex(), canvas.getWidth(),
-                        canvas.getHeight());
+                        canvas.getHeight(), canvas.getGraphics());
 
                 if (MainClass.this.curve.controlPoints().size() > 1) {
                     MainClass.this.curve.curveType().updateCurve(
@@ -171,10 +172,10 @@ public class MainClass {
             public void mouseClicked(MouseEvent e) {
 
                 MainClass.this.curve.delete();
-                PointsOperation.updatePoints(canvas.getGraphics(),
+                PointsOperation.updatePoints(
                         MainClass.this.curve.controlPoints(),
                         MainClass.this.curve.currentIndex(), canvas.getWidth(),
-                        canvas.getHeight());
+                        canvas.getHeight(), canvas.getGraphics());
 
                 if (MainClass.this.curve.controlPoints().size() > 1) {
                     MainClass.this.curve.curveType().updateCurve(
@@ -194,10 +195,10 @@ public class MainClass {
 
                 MainClass.this.curve.changeCurveStatus(CurveType.CUBICBSPLINE);
 
-                PointsOperation.updatePoints(canvas.getGraphics(),
+                PointsOperation.updatePoints(
                         MainClass.this.curve.controlPoints(),
                         MainClass.this.curve.currentIndex(), canvas.getWidth(),
-                        canvas.getHeight());
+                        canvas.getHeight(), canvas.getGraphics());
                 if (MainClass.this.curve.controlPoints().size() > 1) {
                     MainClass.this.curve.curveType().updateCurve(
                             MainClass.this.curve, canvas.getGraphics());
@@ -216,10 +217,10 @@ public class MainClass {
 
                 MainClass.this.curve.changeCurveStatus(CurveType.BEZIER);
 
-                PointsOperation.updatePoints(canvas.getGraphics(),
+                PointsOperation.updatePoints(
                         MainClass.this.curve.controlPoints(),
                         MainClass.this.curve.currentIndex(), canvas.getWidth(),
-                        canvas.getHeight());
+                        canvas.getHeight(), canvas.getGraphics());
                 if (MainClass.this.curve.controlPoints().size() > 1) {
                     MainClass.this.curve.curveType().updateCurve(
                             MainClass.this.curve, canvas.getGraphics());
@@ -314,9 +315,11 @@ public class MainClass {
                 /*
                  * Clear canvas.
                  */
-                PointsOperation.updatePoints(canvas.getGraphics(),
+
+                PointsOperation.updatePoints(
                         MainClass.this.curve.controlPoints(), -1,
-                        canvas.getWidth(), canvas.getHeight());
+                        canvas.getWidth(), canvas.getHeight(),
+                        canvas.getGraphics());
 
                 /*
                  * Reset buttons.
@@ -328,6 +331,13 @@ public class MainClass {
         });
         clear.setBounds(34, 540, 277, 25);
         this.frmCseGeometric.getContentPane().add(clear);
+
+        Canvas3D canvas3D = new Canvas3D(
+                SimpleUniverse.getPreferredConfiguration());
+        canvas3D.setBackground(UIManager.getColor("Button.foreground"));
+        canvas3D.setEnabled(false);
+        canvas3D.setBounds(364, 433, 850, 350);
+        this.frmCseGeometric.getContentPane().add(canvas3D);
 
         /*
          * Generate curves or generate surfaces or solids
@@ -350,7 +360,7 @@ public class MainClass {
                 /*
                  * Disable all surface or solid choices
                  */
-
+                canvas3D.setEnabled(false);
                 extrusion.setEnabled(false);
                 sweep.setEnabled(false);
                 revolution.setEnabled(false);
@@ -380,7 +390,7 @@ public class MainClass {
                 /*
                  * Enable all surface or solid choices
                  */
-
+                canvas3D.setEnabled(true);
                 extrusion.setEnabled(true);
                 sweep.setEnabled(true);
                 revolution.setEnabled(true);
@@ -391,5 +401,6 @@ public class MainClass {
         });
         generateSurfacesSolids.setBounds(34, 600, 277, 25);
         this.frmCseGeometric.getContentPane().add(generateSurfacesSolids);
+
     }
 }

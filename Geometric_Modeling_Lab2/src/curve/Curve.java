@@ -19,12 +19,7 @@ public class Curve {
      * Private members.
      */
 
-    private static final int RELATIVEERROR = 100;
-
-    /**
-     * Number of subdivisions given by users.
-     */
-    private int subdivisions;
+    private static final int RELATIVEERROR = 20 * 20;
 
     /**
      * Current index of point selected in insertPoints list. If the list is
@@ -56,8 +51,6 @@ public class Curve {
      */
     private void createNewRep() {
         this.insertPoints = new LinkedList<>();
-
-        this.subdivisions = 4; // default subdivisions is 4
         this.currentIndex = -1;
         this.curveType = CurveType.BEZIER;
         this.pointType = PointType.ADD;
@@ -81,24 +74,6 @@ public class Curve {
      */
     public void insert2InsertPoints(Point3i point) {
         this.insertPoints.add(this.currentIndex, point);
-    }
-
-    /**
-     * Change subdivisions based on user input.
-     *
-     * @param input
-     */
-    public void changeSubdivision(int input) {
-        this.subdivisions = input;
-    }
-
-    /**
-     * Return subdivisions.
-     *
-     * @return subdivision
-     */
-    public int getSubdivision() {
-        return this.subdivisions;
     }
 
     /**

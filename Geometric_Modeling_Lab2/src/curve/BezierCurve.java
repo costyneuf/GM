@@ -8,6 +8,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Vector;
 
 import javax.vecmath.Point3i;
 
@@ -24,12 +25,17 @@ public class BezierCurve {
     /**
      * Initial value of u.
      */
-    private static final double INITIAL_U = 1E-4;
+    private static final double INITIAL_U = 1E-2;
 
     /**
      * Store a copy of ctrlPoints list.
      */
     private List<Point3i> points = new LinkedList<>();
+
+    /**
+     * Store a new set of points.
+     */
+    private Vector<Point3i> modifiedPoints = new Vector<Point3i>();
 
     /**
      * Constructor of BezierCurve.
@@ -62,12 +68,12 @@ public class BezierCurve {
         /*
          * if n = 0, then factorial(0) = 1
          */
-        long fact = 1;
-
-        for (int i = 1; i <= n; i++) {
-            fact *= i;
+        if (n <= 1) {
+            return 1;
+        } else {
+            return n * factorial(n - 1);
         }
-        return fact;
+
     }
 
     /**
@@ -114,6 +120,8 @@ public class BezierCurve {
          */
         int p1X = this.points.get(0).x;
         int p1Y = this.points.get(0).y;
+        int p1Z = this.points.get(0).z;
+        this.modifiedPoints.add(this.points.get(0));
 
         /*
          * Deal with real curves only.
@@ -124,12 +132,14 @@ public class BezierCurve {
 
             while (j < 1) {
 
-                double p2X = 0, p2Y = 0;
+                double p2X = 0, p2Y = 0, p2Z = 0;
 
                 for (int i = 0; i < this.points.size(); i++) {
                     p2X += (this.points.get(i).x
                             * bernstein(this.points.size() - 1, i, j));
                     p2Y += (this.points.get(i).y
+                            * bernstein(this.points.size() - 1, i, j));
+                    p2Z += (this.points.get(i).z
                             * bernstein(this.points.size() - 1, i, j));
                 }
 
@@ -137,6 +147,8 @@ public class BezierCurve {
                         (int) Math.round(p2Y));
                 p1X = (int) Math.round(p2X);
                 p1Y = (int) Math.round(p2Y);
+                p1Z = (int) Math.round(p2Z);
+                this.modifiedPoints.add(new Point3i(p1X, p1Y, p1Z));
 
                 j += INITIAL_U;
             }
@@ -148,6 +160,11 @@ public class BezierCurve {
          */
         g2.drawLine(p1X, p1Y, this.points.get(this.points.size() - 1).x,
                 this.points.get(this.points.size() - 1).y);
+        this.modifiedPoints.add(this.points.get(this.points.size() - 1));
 
+    }
+
+    public Vector<Point3i> modifiedPoints() {
+        return this.modifiedPoints;
     }
 }

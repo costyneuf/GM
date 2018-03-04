@@ -5,6 +5,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Vector;
 
 import javax.vecmath.Point3i;
 
@@ -22,6 +23,10 @@ public class CubicUniformBSpline {
      * Store a copy of ctrlPoints list.
      */
     private List<Point3i> points = new LinkedList<>();
+    /**
+     * Store a new set of points.
+     */
+    private Vector<Point3i> modifiedPoints = new Vector<Point3i>();
 
     /**
      * Constructor of CubicUniformBSpline.
@@ -105,11 +110,12 @@ public class CubicUniformBSpline {
                 double u = INCREMENT;
                 Point3i p = null;
                 while (u < 1) {
-                    double pX = 0, pY = 0;
+                    double pX = 0, pY = 0, pZ = 0;
 
                     for (int j = 1; j <= 4; j++) {
                         pX += basis(j, u) * pt[j - 1].x;
                         pY += basis(j, u) * pt[j - 1].y;
+                        pZ += basis(j, u) * pt[j - 1].z;
                     }
 
                     if (p != null) {
@@ -117,7 +123,8 @@ public class CubicUniformBSpline {
                                 (int) Math.round(pY));
                     }
                     p = new Point3i((int) Math.round(pX), (int) Math.round(pY),
-                            0);
+                            (int) Math.round(pZ));
+                    this.modifiedPoints.add(p);
                     u += INCREMENT;
                 }
             }
@@ -130,6 +137,10 @@ public class CubicUniformBSpline {
                     this.points.get(1).x, this.points.get(1).y);
         }
 
+    }
+
+    public Vector<Point3i> modifiedPoints() {
+        return this.modifiedPoints;
     }
 
 }
