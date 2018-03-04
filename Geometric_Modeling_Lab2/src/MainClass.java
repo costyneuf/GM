@@ -1,6 +1,5 @@
 
 import java.awt.Canvas;
-import java.awt.EventQueue;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
@@ -23,27 +22,10 @@ import curve.PointsOperation;
 public class MainClass {
 
     private Curve curve = new Curve();
-    private JFrame frame;
+    protected JFrame frame;
     private JTextField textField;
     private ButtonGroup curveChoice = new ButtonGroup();
     private ButtonGroup pointChoice = new ButtonGroup();
-
-    /**
-     * Launch the application.
-     */
-    public static void main(String[] args) {
-        EventQueue.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    MainClass window = new MainClass();
-                    window.frame.setVisible(true);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-    }
 
     /**
      * Create the application.
