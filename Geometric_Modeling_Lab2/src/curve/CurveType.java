@@ -3,7 +3,7 @@ package curve;
 import java.awt.Graphics;
 import java.util.List;
 
-import org.eclipse.swt.graphics.Point;
+import javax.vecmath.Point3i;
 
 public enum CurveType implements Operation {
 
@@ -20,7 +20,7 @@ public enum CurveType implements Operation {
         }
 
         @Override
-        public void updateCurve(List<Point> pt, Graphics g) {
+        public void updateCurve(List<Point3i> pt, Graphics g) {
 
             BezierCurve c = new BezierCurve(pt);
             c.generateCurve(g);
@@ -43,7 +43,7 @@ public enum CurveType implements Operation {
         }
 
         @Override
-        public void updateCurve(List<Point> pt, Graphics g) {
+        public void updateCurve(List<Point3i> pt, Graphics g) {
 
             CubicUniformBSpline c = new CubicUniformBSpline(pt);
             c.generateCurve(g);
@@ -66,7 +66,7 @@ public enum CurveType implements Operation {
         }
 
         @Override
-        public void updateCurve(List<Point> pt, Graphics g) {
+        public void updateCurve(List<Point3i> pt, Graphics g) {
             // No code here
         }
 
@@ -84,7 +84,7 @@ public enum CurveType implements Operation {
         }
 
         @Override
-        public void updateCurve(List<Point> pt, Graphics g) {
+        public void updateCurve(List<Point3i> pt, Graphics g) {
             // No code here
 
         }
@@ -92,7 +92,7 @@ public enum CurveType implements Operation {
     };
 
     @Override
-    public void updatePointsList(Point point, Curve curve) {
+    public void updatePointsList(Point3i point, Curve curve) {
         // No code here.
 
     }
@@ -100,8 +100,8 @@ public enum CurveType implements Operation {
     /**
      * Change the curve status in {@code curve}.
      *
-     * @param curve
-     *            the curve needing the change of curve status
+     * the curve needing the change of curve status
+     * 
      * @param type
      *            the type of the curve
      */

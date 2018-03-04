@@ -6,7 +6,7 @@ package curve;
 import java.awt.Graphics;
 import java.util.List;
 
-import org.eclipse.swt.graphics.Point;
+import javax.vecmath.Point3i;
 
 /**
  * @author gaoxing
@@ -36,7 +36,7 @@ public enum PointType implements Operation {
     };
 
     @Override
-    public void updatePointsList(Point point, Curve curve) {
+    public void updatePointsList(Point3i point, Curve curve) {
         curve.insert2InsertPoints(point);
 
     }
@@ -48,7 +48,7 @@ public enum PointType implements Operation {
     }
 
     @Override
-    public void updateCurve(List<Point> pt, Graphics g) {
+    public void updateCurve(List<Point3i> pt, Graphics g) {
         // No code need here.
     }
 

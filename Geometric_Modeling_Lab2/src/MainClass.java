@@ -14,8 +14,7 @@ import javax.swing.JSlider;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.UIManager;
-
-import org.eclipse.swt.graphics.Point;
+import javax.vecmath.Point3i;
 
 import curve.Curve;
 import curve.CurveType;
@@ -75,8 +74,8 @@ public class MainClass {
             @Override
             public void mouseDragged(MouseEvent arg0) {
                 if (MainClass.this.curve.pointType() == PointType.EDIT) {
-                    MainClass.this.curve
-                            .editUpdate(new Point(arg0.getX(), arg0.getY()));
+                    MainClass.this.curve.editUpdate(
+                            new Point3i(arg0.getX(), arg0.getY(), 0));
 
                     PointsOperation.updatePoints(canvas.getGraphics(),
                             MainClass.this.curve.controlPoints(),
@@ -97,7 +96,7 @@ public class MainClass {
             public void mouseClicked(MouseEvent arg0) {
 
                 MainClass.this.curve.updateIndexAndList(
-                        new Point(arg0.getX(), arg0.getY()));
+                        new Point3i(arg0.getX(), arg0.getY(), 0));
                 PointsOperation.updatePoints(canvas.getGraphics(),
                         MainClass.this.curve.controlPoints(),
                         MainClass.this.curve.currentIndex(), canvas.getWidth(),

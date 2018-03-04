@@ -3,7 +3,7 @@ package curve;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.eclipse.swt.graphics.Point;
+import javax.vecmath.Point3i;
 
 /**
  * Generate curves based on the points input and curve type.
@@ -35,7 +35,7 @@ public class Curve {
     /**
      * Store all points inserted by sequence.
      */
-    private List<Point> insertPoints;
+    private List<Point3i> insertPoints;
 
     /**
      * Default type of curve is BEZIER.
@@ -79,7 +79,7 @@ public class Curve {
      *
      * @param point
      */
-    public void insert2InsertPoints(Point point) {
+    public void insert2InsertPoints(Point3i point) {
         this.insertPoints.add(this.currentIndex, point);
     }
 
@@ -110,7 +110,7 @@ public class Curve {
      *            point will be added, deleted, or changed
      * @return the current index
      */
-    public int updateIndexAndList(Point point) {
+    public int updateIndexAndList(Point3i point) {
 
         if (this.pointType == PointType.ADD) {
 
@@ -119,7 +119,7 @@ public class Curve {
 
         } else if (this.pointType == PointType.EDIT) {
 
-            for (Point p : this.insertPoints) {
+            for (Point3i p : this.insertPoints) {
                 if ((p.x - point.x) * (p.x - point.x)
                         + (p.y - point.y) * (p.y - point.y) <= RELATIVEERROR) {
                     this.currentIndex = this.insertPoints.indexOf(p);
@@ -143,7 +143,7 @@ public class Curve {
      *
      * @return a linked list of control points
      */
-    public List<Point> controlPoints() {
+    public List<Point3i> controlPoints() {
         return this.insertPoints;
     }
 
@@ -223,7 +223,7 @@ public class Curve {
 
     }
 
-    public void editUpdate(Point point) {
+    public void editUpdate(Point3i point) {
         this.insertPoints.remove(this.currentIndex);
         this.insertPoints.add(this.currentIndex, point);
     }

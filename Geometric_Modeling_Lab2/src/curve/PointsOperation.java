@@ -5,7 +5,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.util.List;
 
-import org.eclipse.swt.graphics.Point;
+import javax.vecmath.Point3i;
 
 /**
  *
@@ -36,14 +36,14 @@ public final class PointsOperation {
      * @param ctrlPoints
      * @param currentIndex
      */
-    private static void paintPoints(Graphics g, List<Point> ctrlPoints,
+    private static void paintPoints(Graphics g, List<Point3i> ctrlPoints,
             int currentIndex) {
         assert currentIndex != -1 && ctrlPoints
                 .size() > 0 : "Violation of: The control point list is empty.";
 
         Graphics2D g2 = (Graphics2D) g;
 
-        for (Point p : ctrlPoints) {
+        for (Point3i p : ctrlPoints) {
 
             if (ctrlPoints.indexOf(p) != currentIndex) {
                 g2.setColor(Color.RED);
@@ -64,7 +64,7 @@ public final class PointsOperation {
      * @param p1
      * @param p2
      */
-    private static void connectedPoints(Graphics g, Point p1, Point p2) {
+    private static void connectedPoints(Graphics g, Point3i p1, Point3i p2) {
 
         Graphics2D g2 = (Graphics2D) g;
 
@@ -94,7 +94,7 @@ public final class PointsOperation {
      * @param width
      * @param height
      */
-    public static void updatePoints(Graphics g, List<Point> ctrlPoints,
+    public static void updatePoints(Graphics g, List<Point3i> ctrlPoints,
             int currentIndex, int width, int height) {
 
         clearCanvas(g, width, height);

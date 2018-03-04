@@ -9,7 +9,7 @@ import java.awt.Graphics2D;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.eclipse.swt.graphics.Point;
+import javax.vecmath.Point3i;
 
 /**
  * @author gaoxing
@@ -29,14 +29,14 @@ public class BezierCurve {
     /**
      * Store a copy of ctrlPoints list.
      */
-    private List<Point> points = new LinkedList<>();
+    private List<Point3i> points = new LinkedList<>();
 
     /**
      * Constructor of BezierCurve.
      *
      * @param ctrlPoints
      */
-    public BezierCurve(List<Point> ctrlPoints) {
+    public BezierCurve(List<Point3i> ctrlPoints) {
 
         /*
          * Copy all points in ctrlPoints to points.

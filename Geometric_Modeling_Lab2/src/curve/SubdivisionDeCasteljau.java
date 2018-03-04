@@ -9,7 +9,7 @@ import java.awt.Graphics2D;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.eclipse.swt.graphics.Point;
+import javax.vecmath.Point3i;
 
 /**
  * @author gaoxing
@@ -26,7 +26,7 @@ public class SubdivisionDeCasteljau {
     /**
      * Store a copy of ctrlPoints list.
      */
-    private List<Point> ctrlPoints = new LinkedList<>();
+    private List<Point3i> ctrlPoints = new LinkedList<>();
 
     /**
      * Subdivisions of the curve.
@@ -39,7 +39,7 @@ public class SubdivisionDeCasteljau {
      * @param ctrlPoints
      * @param subdivisions
      */
-    public SubdivisionDeCasteljau(List<Point> ctrlPoints, int subdivisions) {
+    public SubdivisionDeCasteljau(List<Point3i> ctrlPoints, int subdivisions) {
 
         /*
          * Copy all points in ctrlPoints to points.
@@ -62,8 +62,8 @@ public class SubdivisionDeCasteljau {
      * @param u
      * @update ctrlPoints
      */
-    private static void oneSubdivide(List<Point> ctrlPoints, List<Point> poly1,
-            List<Point> poly2, double u) {
+    private static void oneSubdivide(List<Point3i> ctrlPoints,
+            List<Point3i> poly1, List<Point3i> poly2, double u) {
 
         int n = ctrlPoints.size() - 1;
 
@@ -88,14 +88,14 @@ public class SubdivisionDeCasteljau {
              * (2) compute q[i] = p[i] + u * (p[i + 1] - p[i]), where i = 0, 1,
              * ..., n - 1
              */
-            List<Point> temp = new LinkedList<>();
+            List<Point3i> temp = new LinkedList<>();
 
             for (int i = 0; i < n; i++) {
                 int x = (int) Math.round(ctrlPoints.get(i).x
                         + u * (ctrlPoints.get(i + 1).x - ctrlPoints.get(i).x));
                 int y = (int) Math.round(ctrlPoints.get(i).y
                         + u * (ctrlPoints.get(i + 1).y - ctrlPoints.get(i).y));
-                temp.add(new Point(x, y));
+                temp.add(new Point3i(x, y, 0));
             }
             ctrlPoints.clear();
             ctrlPoints.addAll(temp);
@@ -109,19 +109,19 @@ public class SubdivisionDeCasteljau {
         }
     }
 
-    private static void subdivide(List<Point> ctrlPoints, int m, double u) {
+    private static void subdivide(List<Point3i> ctrlPoints, int m, double u) {
 
         /*
          * if m = 1 oneSubdivide(ctrlPoints, {}, {}, u)
          */
 
         int n = ctrlPoints.size() - 1;
-        oneSubdivide(ctrlPoints, new LinkedList<Point>(),
-                new LinkedList<Point>(), u);
+        oneSubdivide(ctrlPoints, new LinkedList<Point3i>(),
+                new LinkedList<Point3i>(), u);
 
         if (m != 1) {
 
-            List<Point> temp = new LinkedList<>();
+            List<Point3i> temp = new LinkedList<>();
             while (ctrlPoints.size() > n + 1) {
                 temp.add(ctrlPoints.remove(n + 1));
             }

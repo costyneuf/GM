@@ -6,7 +6,7 @@ package curve;
 import java.awt.Graphics;
 import java.util.List;
 
-import org.eclipse.swt.graphics.Point;
+import javax.vecmath.Point3i;
 
 /**
  * @author gaoxing
@@ -23,7 +23,7 @@ public interface Operation {
      * @param curve
      *            the curve containing the linked list
      */
-    void updatePointsList(Point point, Curve curve);
+    void updatePointsList(Point3i point, Curve curve);
 
     /**
      * Update the curve based on curve status in {@code curve} and redraw it on
@@ -45,6 +45,6 @@ public interface Operation {
      * @param g
      *            the media for updating the canvas
      */
-    void updateCurve(List<Point> pt, Graphics g);
+    void updateCurve(List<Point3i> pt, Graphics g);
 
 }

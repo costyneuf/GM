@@ -9,7 +9,7 @@ import java.awt.Graphics2D;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.eclipse.swt.graphics.Point;
+import javax.vecmath.Point3i;
 
 /**
  * @author gaoxing
@@ -25,7 +25,7 @@ public class SubdivisionQuadricB {
     /**
      * Store a copy of ctrlPoints list.
      */
-    private List<Point> points = new LinkedList<>();
+    private List<Point3i> points = new LinkedList<>();
 
     /**
      * Constructor of SubdivisionQuadricB.
@@ -33,7 +33,7 @@ public class SubdivisionQuadricB {
      * @param ctrlPoints
      * @param subdivisions
      */
-    public SubdivisionQuadricB(List<Point> ctrlPoints) {
+    public SubdivisionQuadricB(List<Point3i> ctrlPoints) {
 
         /*
          * Copy all points in ctrlPoints to points.
@@ -77,23 +77,23 @@ public class SubdivisionQuadricB {
         return result;
     }
 
-    private static void updatePoints(List<Point> points) {
+    private static void updatePoints(List<Point3i> points) {
 
         for (int i = 1; i <= points.size() - 2; i += 5) {
 
-            Point[] pt = new Point[3];
+            Point3i[] pt = new Point3i[3];
             pt[0] = points.get(i - 1);
             pt[1] = points.get(i);
             pt[2] = points.get(i + 1);
 
-            Point q1 = new Point(3 * pt[0].x / 4 + pt[1].x / 4,
-                    3 * pt[0].y / 4 + pt[1].y / 4);
-            Point q2 = new Point(3 * pt[1].x / 4 + pt[0].x / 4,
-                    3 * pt[1].y / 4 + pt[0].y / 4);
-            Point r1 = new Point(3 * pt[1].x / 4 + pt[2].x / 4,
-                    3 * pt[1].y / 4 + pt[2].y / 4);
-            Point r2 = new Point(3 * pt[2].x / 4 + pt[1].x / 4,
-                    3 * pt[2].y / 4 + pt[1].y / 4);
+            Point3i q1 = new Point3i(3 * pt[0].x / 4 + pt[1].x / 4,
+                    3 * pt[0].y / 4 + pt[1].y / 4, 0);
+            Point3i q2 = new Point3i(3 * pt[1].x / 4 + pt[0].x / 4,
+                    3 * pt[1].y / 4 + pt[0].y / 4, 0);
+            Point3i r1 = new Point3i(3 * pt[1].x / 4 + pt[2].x / 4,
+                    3 * pt[1].y / 4 + pt[2].y / 4, 0);
+            Point3i r2 = new Point3i(3 * pt[2].x / 4 + pt[1].x / 4,
+                    3 * pt[2].y / 4 + pt[1].y / 4, 0);
 
             points.add(i, q1);
             points.add(i + 1, q2);
@@ -127,13 +127,13 @@ public class SubdivisionQuadricB {
 
             for (int i = 1; i <= n - 1; i++) {
 
-                Point[] pt = new Point[3];
+                Point3i[] pt = new Point3i[3];
                 pt[0] = this.points.get(i - 1);
                 pt[1] = this.points.get(i);
                 pt[2] = this.points.get(i + 1);
 
                 double u = INCREMENT;
-                Point p = null;
+                Point3i p = null;
                 while (u < 1) {
                     double pX = 0, pY = 0;
 
@@ -146,7 +146,8 @@ public class SubdivisionQuadricB {
                         g2.drawLine(p.x, p.y, (int) Math.round(pX),
                                 (int) Math.round(pY));
                     }
-                    p = new Point((int) Math.round(pX), (int) Math.round(pY));
+                    p = new Point3i((int) Math.round(pX), (int) Math.round(pY),
+                            0);
                     u += INCREMENT;
                 }
             }

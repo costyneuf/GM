@@ -6,7 +6,7 @@ import java.awt.Graphics2D;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.eclipse.swt.graphics.Point;
+import javax.vecmath.Point3i;
 
 public class CubicUniformBSpline {
     /*
@@ -21,14 +21,14 @@ public class CubicUniformBSpline {
     /**
      * Store a copy of ctrlPoints list.
      */
-    private List<Point> points = new LinkedList<>();
+    private List<Point3i> points = new LinkedList<>();
 
     /**
      * Constructor of CubicUniformBSpline.
      *
      * @param ctrlPoints
      */
-    public CubicUniformBSpline(List<Point> ctrlPoints) {
+    public CubicUniformBSpline(List<Point3i> ctrlPoints) {
 
         /*
          * Copy all points in ctrlPoints to points.
@@ -96,14 +96,14 @@ public class CubicUniformBSpline {
 
             for (int i = 1; i <= n - 2; i++) {
 
-                Point[] pt = new Point[4];
+                Point3i[] pt = new Point3i[4];
                 pt[0] = this.points.get(i - 1);
                 pt[1] = this.points.get(i);
                 pt[2] = this.points.get(i + 1);
                 pt[3] = this.points.get(i + 2);
 
                 double u = INCREMENT;
-                Point p = null;
+                Point3i p = null;
                 while (u < 1) {
                     double pX = 0, pY = 0;
 
@@ -116,7 +116,8 @@ public class CubicUniformBSpline {
                         g2.drawLine(p.x, p.y, (int) Math.round(pX),
                                 (int) Math.round(pY));
                     }
-                    p = new Point((int) Math.round(pX), (int) Math.round(pY));
+                    p = new Point3i((int) Math.round(pX), (int) Math.round(pY),
+                            0);
                     u += INCREMENT;
                 }
             }
