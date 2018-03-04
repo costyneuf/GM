@@ -31,6 +31,9 @@ public class MainClass {
     private ButtonGroup pointChoice = new ButtonGroup();
     private ButtonGroup surfaceChoice = new ButtonGroup();
 
+    private boolean outputASCII = false;
+    private int numberOfSlices;
+
     /**
      * Create the application.
      */
@@ -330,17 +333,23 @@ public class MainClass {
 
         JRadioButton extrusion = new JRadioButton("Extrusion");
         extrusion.setEnabled(false);
-        extrusion.setBounds(34, 240, 324, 23);
+        extrusion.setBounds(34, 280, 324, 23);
         this.frmCseGeometric.getContentPane().add(extrusion);
         this.surfaceChoice.add(extrusion);
 
         JRadioButton sweep = new JRadioButton("Sweep Operators");
         sweep.setEnabled(false);
-        sweep.setBounds(34, 260, 324, 23);
+        sweep.setBounds(34, 300, 324, 23);
         this.frmCseGeometric.getContentPane().add(sweep);
         this.surfaceChoice.add(sweep);
 
         JCheckBox outputASCII = new JCheckBox("Output ASCII Vertex-Face File");
+        outputASCII.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                MainClass.this.outputASCII = !MainClass.this.outputASCII;
+            }
+        });
         outputASCII.setEnabled(false);
         outputASCII.setBounds(34, 298, 286, 25);
         this.frmCseGeometric.getContentPane().add(outputASCII);
@@ -360,9 +369,23 @@ public class MainClass {
          * Slider for setting up number of slices
          */
         JSlider numberOfSlices = new JSlider();
-        numberOfSlices.setValue(20);
+        numberOfSlices.setFont(new Font("Dialog", Font.BOLD, 10));
+        numberOfSlices.setPaintTicks(true);
+        numberOfSlices.setPaintLabels(true);
+        numberOfSlices.setMajorTickSpacing(20);
         numberOfSlices.setEnabled(false);
-        numberOfSlices.setBounds(170, 205, 140, 40);
+        numberOfSlices.setMinorTickSpacing(5);
+
+        numberOfSlices.addMouseMotionListener(new MouseMotionAdapter() {
+            @Override
+            public void mouseDragged(MouseEvent arg0) {
+                MainClass.this.numberOfSlices = numberOfSlices.getValue();
+                System.out.println(MainClass.this.numberOfSlices);
+            }
+        });
+        numberOfSlices.setValue(20);
+        this.numberOfSlices = numberOfSlices.getValue();
+        numberOfSlices.setBounds(170, 205, 140, 58);
         this.frmCseGeometric.getContentPane().add(numberOfSlices);
 
         /*
