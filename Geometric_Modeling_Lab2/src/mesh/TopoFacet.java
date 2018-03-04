@@ -25,48 +25,48 @@ class TopoFacet {
     /*
      * Constructor
      */
-    public TopoFacet() {
+    protected TopoFacet() {
         this.mIncVerts = new Vector<Integer>();
         this.mIncEdges = new Vector<Integer>();
         this.mIncFacets = new Set1L<Integer>();
     };
 
     /*
-     * Public members
+     * protected members
      */
-    public void addIncVertex(int v_ind) {
+    protected void addIncVertex(int v_ind) {
         this.mIncVerts.add(v_ind);
     }
 
-    public void addIncEdge(int e_ind) {
+    protected void addIncEdge(int e_ind) {
         this.mIncEdges.add(e_ind);
     }
 
-    public void addIncFacet(int f_ind) {
+    protected void addIncFacet(int f_ind) {
         this.mIncFacets.add(f_ind);
     }
 
-    public int getNumberVertices() {
+    protected int getNumberVertices() {
         return this.mIncVerts.size();
     }
 
-    public int getVertexInd(int vert_ind) {
+    protected int getVertexInd(int vert_ind) {
         return this.mIncVerts.elementAt(vert_ind);
     }
 
-    public int getNumberEdges() {
+    protected int getNumberEdges() {
         return this.mIncEdges.size();
     }
 
-    public int getIncEdge(int edge_ind) {
+    protected int getIncEdge(int edge_ind) {
         return this.mIncEdges.elementAt(edge_ind);
     }
 
-    public int getNumberFacets() {
+    protected int getNumberFacets() {
         return this.mIncFacets.size();
     }
 
-    public int getIncFacets(int facet_ind) {
+    protected int getIncFacets(int facet_ind) {
         int[] toArray = new int[this.mIncFacets.size()];
         int i = 0;
         for (int facet : this.mIncFacets) {
