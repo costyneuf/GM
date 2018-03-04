@@ -10,7 +10,7 @@ public class Main {
             public void run() {
                 try {
                     MainClass window = new MainClass();
-                    window.frame.setVisible(true);
+                    window.frmCseGeometric.setVisible(true);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
