@@ -31,8 +31,6 @@ public class BezierCurve {
      */
     private List<Point> points = new LinkedList<>();
 
-    private int subdivisions = 0;
-
     /**
      * Constructor of BezierCurve.
      *
