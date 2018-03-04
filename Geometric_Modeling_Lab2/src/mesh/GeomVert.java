@@ -4,7 +4,7 @@
 
 package mesh;
 
-public class GeomVert {
+class GeomVert {
 
     /*
      * Private members

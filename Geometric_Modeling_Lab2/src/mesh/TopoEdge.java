@@ -6,7 +6,7 @@ package mesh;
 
 import java.util.Vector;
 
-public class TopoEdge {
+class TopoEdge {
 
     /*
      * Private members

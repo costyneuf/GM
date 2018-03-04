@@ -6,7 +6,7 @@ import java.util.Vector;
 import components.set.Set;
 import components.set.Set1L;
 
-public class TopoVert {
+class TopoVert {
 
     /*
      * Private members

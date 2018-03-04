@@ -46,54 +46,11 @@ public class Mesh {
     }
 
     /**
-     * Search for an edge in the mesh.
-     *
-     * @param e
-     * @return index of {@code e} if found, -1 otherwise
-     */
-    private int findTopoEdge(TopoEdge e) {
-        for (int i = 0; i < this.mTopoEdges.size(); i++) {
-            if (this.mTopoEdges.elementAt(i).operator(e)) {
-                return i;
-            }
-
-        }
-        return -1;
-    }
-
-    /*
-     * Public members
-     */
-
-    /**
-     * Add a triangle to the mesh.
-     *
-     * @param x1
-     * @param y1
-     * @param z1
-     * @param x2
-     * @param y2
-     * @param z2
-     * @param x3
-     * @param y3
-     * @param z3
-     */
-    public void addFacet(float x1, float y1, float z1, float x2, float y2,
-            float z2, float x3, float y3, float z3) {
-
-        Vector<GeomVert> geomFacet = new Vector<GeomVert>();
-        geomFacet.add(new GeomVert(x1, y1, z1));
-        geomFacet.add(new GeomVert(x2, y2, z2));
-        geomFacet.add(new GeomVert(x3, y3, z3));
-        this.addFacet(geomFacet);
-    }
-
-    /**
      * Add a facet with arbitrary number of vertices to mesh.
      *
      * @param geomFacet
      */
-    public void addFacet(Vector<GeomVert> geomFacet) {
+    private void addFacet(Vector<GeomVert> geomFacet) {
         int i;
 
         /*
@@ -210,6 +167,49 @@ public class Mesh {
             }
         }
 
+    }
+
+    /**
+     * Search for an edge in the mesh.
+     *
+     * @param e
+     * @return index of {@code e} if found, -1 otherwise
+     */
+    private int findTopoEdge(TopoEdge e) {
+        for (int i = 0; i < this.mTopoEdges.size(); i++) {
+            if (this.mTopoEdges.elementAt(i).operator(e)) {
+                return i;
+            }
+
+        }
+        return -1;
+    }
+
+    /*
+     * Public members
+     */
+
+    /**
+     * Add a triangle to the mesh.
+     *
+     * @param x1
+     * @param y1
+     * @param z1
+     * @param x2
+     * @param y2
+     * @param z2
+     * @param x3
+     * @param y3
+     * @param z3
+     */
+    public void addFacet(float x1, float y1, float z1, float x2, float y2,
+            float z2, float x3, float y3, float z3) {
+
+        Vector<GeomVert> geomFacet = new Vector<GeomVert>();
+        geomFacet.add(new GeomVert(x1, y1, z1));
+        geomFacet.add(new GeomVert(x2, y2, z2));
+        geomFacet.add(new GeomVert(x3, y3, z3));
+        this.addFacet(geomFacet);
     }
 
     public int getNumberVertices() {
