@@ -29,7 +29,9 @@ class TopoVert {
      * protected members
      */
     protected void addIncVert(int vert_ind) {
-        this.mIncVerts.add(vert_ind);
+        if (!this.mIncVerts.contains(vert_ind)) {
+            this.mIncVerts.add(vert_ind);
+        }
 
     }
 

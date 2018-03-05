@@ -23,10 +23,10 @@ public class Mesh {
      * Private members
      *
      */
-    private Vector<GeomVert> mGeomVerts;
-    private Vector<TopoVert> mTopoVerts;
-    private Vector<TopoEdge> mTopoEdges;
-    private Vector<TopoFacet> mTopoFacets;
+    private Vector<GeomVert> mGeomVerts = new Vector<>();
+    private Vector<TopoVert> mTopoVerts = new Vector<>();
+    private Vector<TopoEdge> mTopoEdges = new Vector<>();
+    private Vector<TopoFacet> mTopoFacets = new Vector<>();
 
     /**
      * Search for a geometric vertex in the mesh.

@@ -24,7 +24,7 @@ public class Surface {
     private Curve curve;
     private SurfaceOperation surfaceType;
     private boolean outputASCII;
-    private Mesh mesh;
+    static Mesh mesh;
     /**
      * Store all points inserted by sequence.
      */
@@ -39,7 +39,7 @@ public class Surface {
         this.curve = curve;
         this.surfaceType = surfaceType;
         this.outputASCII = outputASCII;
-        this.mesh = new Mesh();
+        mesh = new Mesh();
     }
 
     /**

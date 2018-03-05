@@ -11,6 +11,8 @@ import curve.Curve;
 
 public class CoordinateSystem {
 
+    static int originX, originY;
+
     //    double[] x = { 1, 0, 0 };
     //    double[] y = { 0, 1, 0 };
     //    double[] z = { 0, 0, 1 };
@@ -103,6 +105,9 @@ public class CoordinateSystem {
      */
     private static void copyCurve(Curve curve, Graphics g, int originX,
             int originY) {
+
+        CoordinateSystem.originX = originX;
+        CoordinateSystem.originY = originY;
 
         Graphics2D g2 = (Graphics2D) g;
 

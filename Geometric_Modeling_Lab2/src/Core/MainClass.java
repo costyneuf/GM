@@ -5,6 +5,8 @@ import java.awt.Font;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
+import java.util.LinkedList;
+import java.util.List;
 
 import javax.media.j3d.Canvas3D;
 import javax.swing.ButtonGroup;
@@ -449,12 +451,22 @@ public class MainClass {
                     Surface surface = new Surface(MainClass.this.curve,
                             MainClass.this.surfaceType,
                             MainClass.this.outputASCII);
+
+                    /*
+                     * Clear Canvas3D
+                     */
+                    canvas3D.getGraphics().clearRect(0, 0, canvas3D.getWidth(),
+                            canvas3D.getHeight());
+
+                    // Generate surface methods
+                    surface.surfaceType().updateCanvas3D(MainClass.this.curve,
+                            MainClass.this.numberOfSlices,
+                            canvas3D.getGraphics());
                 }
 
                 // CoordinateSystem coord = new CoordinateSystem(viewFrom, viewTo);
                 //                coord.drawCoordinateSystem(canvas3D.getGraphics());
 
-                // TODO: Add generate surface methods
             }
         });
         btnConfirm.setBounds(34, 350, 100, 24);
@@ -520,13 +532,24 @@ public class MainClass {
                 outputASCII.setEnabled(true);
                 btnConfirm.setEnabled(true);
 
+                /*
+                 * Back up original control points
+                 */
+                List<Point3i> backup = new LinkedList<>();
+                backup.addAll(MainClass.this.curve.controlPoints());
+
                 // Set up coordinate system
                 CoordinateSystem.buildSystem(canvas3D.getGraphics(),
                         canvas3D.getWidth(), canvas3D.getHeight(),
                         MainClass.this.curve);
 
-                // TODO: Copy points and curves
+                // TODO: Generate surfaces
 
+                /*
+                 * Restore control points
+                 */
+                MainClass.this.curve.controlPoints().clear();
+                MainClass.this.curve.controlPoints().addAll(backup);
             }
 
         });
