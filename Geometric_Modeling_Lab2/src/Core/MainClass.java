@@ -1,3 +1,4 @@
+package Core;
 
 import java.awt.Canvas;
 import java.awt.Font;
@@ -12,6 +13,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JRadioButton;
 import javax.swing.JSlider;
+import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.UIManager;
 import javax.vecmath.Point3i;
@@ -22,17 +24,32 @@ import curve.Curve;
 import curve.CurveType;
 import curve.PointType;
 import curve.PointsOperation;
+import surface.Surface;
+import surface.SurfaceType;
+import surface.Triangle2D;
 
 public class MainClass {
 
     private Curve curve = new Curve();
+    private SurfaceType surfaceType;
     private ButtonGroup curveChoice = new ButtonGroup();
     private ButtonGroup pointChoice = new ButtonGroup();
     private ButtonGroup surfaceChoice = new ButtonGroup();
     private boolean outputASCII = false;
     private int numberOfSlices;
 
-    protected JFrame frmCseGeometric;
+    public JFrame frmCseGeometric;
+    public static double[] viewFrom = new double[3];
+    public static double[] viewTo = new double[3];
+    public static int numberOfTriangles = 0;
+    public static Triangle2D[] drawableTriangles = new Triangle2D[10000];
+    private JTextField textField;
+    private JTextField fromX;
+    private JTextField fromY;
+    private JTextField fromZ;
+    private JTextField toX;
+    private JTextField toY;
+    private JTextField toZ;
 
     /**
      * Create the application.
@@ -51,6 +68,53 @@ public class MainClass {
         this.frmCseGeometric.setBounds(100, 100, 1264, 847);
         this.frmCseGeometric.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.frmCseGeometric.getContentPane().setLayout(null);
+
+        JTextPane txtpnViewFrom = new JTextPane();
+        txtpnViewFrom.setText("View From:");
+        txtpnViewFrom.setBounds(34, 655, 124, 23);
+        this.frmCseGeometric.getContentPane().add(txtpnViewFrom);
+
+        this.fromX = new JTextField();
+        this.fromX.setText("10");
+        this.fromX.setBounds(170, 655, 65, 21);
+        this.frmCseGeometric.getContentPane().add(this.fromX);
+        this.fromX.setColumns(10);
+
+        this.fromY = new JTextField();
+        this.fromY.setText("10");
+        this.fromY.setColumns(10);
+        this.fromY.setBounds(170, 680, 65, 21);
+        this.frmCseGeometric.getContentPane().add(this.fromY);
+
+        this.fromZ = new JTextField();
+        this.fromZ.setText("10");
+        this.fromZ.setColumns(10);
+        this.fromZ.setBounds(170, 705, 65, 21);
+        this.frmCseGeometric.getContentPane().add(this.fromZ);
+
+        JTextPane txtpnViewTo = new JTextPane();
+        txtpnViewTo.setEditable(false);
+        txtpnViewTo.setText("View To:");
+        txtpnViewTo.setBounds(34, 732, 124, 23);
+        this.frmCseGeometric.getContentPane().add(txtpnViewTo);
+
+        this.toX = new JTextField();
+        this.toX.setText("5");
+        this.toX.setColumns(10);
+        this.toX.setBounds(170, 732, 65, 21);
+        this.frmCseGeometric.getContentPane().add(this.toX);
+
+        this.toY = new JTextField();
+        this.toY.setText("0");
+        this.toY.setColumns(10);
+        this.toY.setBounds(170, 757, 65, 21);
+        this.frmCseGeometric.getContentPane().add(this.toY);
+
+        this.toZ = new JTextField();
+        this.toZ.setText("0");
+        this.toZ.setColumns(10);
+        this.toZ.setBounds(170, 782, 65, 21);
+        this.frmCseGeometric.getContentPane().add(this.toZ);
 
         /*
          * Set up a canvas where the points will be input and the curve will be
@@ -237,18 +301,36 @@ public class MainClass {
          * Set up a surface choice group
          */
         JRadioButton revolution = new JRadioButton("Surfaces of Revolution");
+        revolution.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                MainClass.this.surfaceType = SurfaceType.REVOLUTION;
+            }
+        });
         revolution.setEnabled(false);
         revolution.setBounds(34, 180, 324, 23);
         this.frmCseGeometric.getContentPane().add(revolution);
         this.surfaceChoice.add(revolution);
 
         JRadioButton extrusion = new JRadioButton("Extrusion");
+        extrusion.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                MainClass.this.surfaceType = SurfaceType.EXTRUSION;
+            }
+        });
         extrusion.setEnabled(false);
         extrusion.setBounds(34, 280, 324, 23);
         this.frmCseGeometric.getContentPane().add(extrusion);
         this.surfaceChoice.add(extrusion);
 
         JRadioButton sweep = new JRadioButton("Sweep Operators");
+        sweep.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                MainClass.this.surfaceType = SurfaceType.SWEEP;
+            }
+        });
         sweep.setEnabled(false);
         sweep.setBounds(34, 300, 324, 23);
         this.frmCseGeometric.getContentPane().add(sweep);
@@ -262,7 +344,7 @@ public class MainClass {
             }
         });
         outputASCII.setEnabled(false);
-        outputASCII.setBounds(34, 298, 286, 25);
+        outputASCII.setBounds(34, 320, 286, 25);
         this.frmCseGeometric.getContentPane().add(outputASCII);
 
         /*
@@ -291,7 +373,6 @@ public class MainClass {
             @Override
             public void mouseDragged(MouseEvent arg0) {
                 MainClass.this.numberOfSlices = numberOfSlices.getValue();
-                System.out.println(MainClass.this.numberOfSlices);
             }
         });
         numberOfSlices.setValue(20);
@@ -398,9 +479,50 @@ public class MainClass {
                 outputASCII.setEnabled(true);
 
             }
+
         });
         generateSurfacesSolids.setBounds(34, 600, 277, 25);
         this.frmCseGeometric.getContentPane().add(generateSurfacesSolids);
+
+        JButton btnConfirm = new JButton("Confirm");
+        btnConfirm.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent arg0) {
+                /*
+                 * Create surface
+                 */
+                if (MainClass.this.curve.controlPoints().size() > 1) {
+
+                    viewFrom[0] = Double
+                            .parseDouble(MainClass.this.fromX.getText());
+                    viewFrom[1] = Double
+                            .parseDouble(MainClass.this.fromY.getText());
+                    viewFrom[2] = Double
+                            .parseDouble(MainClass.this.fromZ.getText());
+
+                    viewTo[0] = Double
+                            .parseDouble(MainClass.this.toX.getText());
+                    viewTo[1] = Double
+                            .parseDouble(MainClass.this.toY.getText());
+                    viewTo[2] = Double
+                            .parseDouble(MainClass.this.toZ.getText());
+
+                    Surface surface = new Surface(
+                            MainClass.this.curve.curveType(),
+                            MainClass.this.surfaceType,
+                            MainClass.this.outputASCII);
+                }
+
+                // TODO: Add generate surface methods
+            }
+        });
+        btnConfirm.setBounds(34, 350, 100, 24);
+        this.frmCseGeometric.getContentPane().add(btnConfirm);
+
+        this.textField = new JTextField();
+        this.textField.setBounds(0, 0, 114, 21);
+        this.frmCseGeometric.getContentPane().add(this.textField);
+        this.textField.setColumns(10);
 
     }
 }
