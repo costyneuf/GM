@@ -1,5 +1,13 @@
 package surface;
 
-public enum SurfaceType {
-    REVOLUTION, EXTRUSION, SWEEP
+public enum SurfaceType implements SurfaceOperation {
+    REVOLUTION {
+
+    },
+    EXTRUSION {
+
+    },
+    SWEEP {
+
+    }
 }

@@ -8,7 +8,7 @@ import java.util.List;
 
 import javax.vecmath.Point3i;
 
-import curve.Operation;
+import curve.Curve;
 import mesh.Mesh;
 
 /**
@@ -21,8 +21,8 @@ public class Surface {
      * Private members
      */
 
-    private Operation curveType;
-    private SurfaceType surfaceType;
+    private Curve curve;
+    private SurfaceOperation surfaceType;
     private boolean outputASCII;
     private Mesh mesh;
     /**
@@ -33,10 +33,10 @@ public class Surface {
     /**
      * Create a new representation for Surface.
      */
-    private void createNewRep(Operation curveType, SurfaceType surfaceType,
+    private void createNewRep(Curve curve, SurfaceOperation surfaceType,
             boolean outputASCII) {
         this.insertPoints = new LinkedList<>();
-        this.curveType = curveType;
+        this.curve = curve;
         this.surfaceType = surfaceType;
         this.outputASCII = outputASCII;
         this.mesh = new Mesh();
@@ -45,13 +45,16 @@ public class Surface {
     /**
      * Constructor method.
      */
-    public Surface(Operation curveType, SurfaceType surfaceType,
+    public Surface(Curve curve, SurfaceOperation surfaceType,
             boolean outputASCII) {
-        this.createNewRep(curveType, surfaceType, outputASCII);
+        this.createNewRep(curve, surfaceType, outputASCII);
     }
 
     /*
      * Public members
      */
 
+    public SurfaceOperation surfaceType() {
+        return this.surfaceType;
+    }
 }

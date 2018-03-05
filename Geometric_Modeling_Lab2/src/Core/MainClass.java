@@ -24,14 +24,16 @@ import curve.Curve;
 import curve.CurveType;
 import curve.PointType;
 import curve.PointsOperation;
+import surface.CoordinateSystem;
 import surface.Surface;
+import surface.SurfaceOperation;
 import surface.SurfaceType;
 import surface.Triangle2D;
 
 public class MainClass {
 
     private Curve curve = new Curve();
-    private SurfaceType surfaceType;
+    private SurfaceOperation surfaceType;
     private ButtonGroup curveChoice = new ButtonGroup();
     private ButtonGroup pointChoice = new ButtonGroup();
     private ButtonGroup surfaceChoice = new ButtonGroup();
@@ -43,7 +45,6 @@ public class MainClass {
     public static double[] viewTo = new double[3];
     public static int numberOfTriangles = 0;
     public static Triangle2D[] drawableTriangles = new Triangle2D[10000];
-    private JTextField textField;
     private JTextField fromX;
     private JTextField fromY;
     private JTextField fromZ;
@@ -165,7 +166,7 @@ public class MainClass {
         });
         canvas.setBackground(
                 UIManager.getColor("ComboBox.selectionForeground"));
-        canvas.setBounds(364, 57, 850, 350);
+        canvas.setBounds(364, 57, 425, 300);
         this.frmCseGeometric.getContentPane().add(canvas);
 
         JRadioButton add_point = new JRadioButton("Add points");
@@ -417,8 +418,47 @@ public class MainClass {
                 SimpleUniverse.getPreferredConfiguration());
         canvas3D.setBackground(UIManager.getColor("Button.foreground"));
         canvas3D.setEnabled(false);
-        canvas3D.setBounds(364, 433, 850, 350);
+        canvas3D.setBounds(364, 460, 850, 300);
         this.frmCseGeometric.getContentPane().add(canvas3D);
+
+        /*
+         * Confirm to launch canvas3D
+         */
+        JButton btnConfirm = new JButton("Confirm");
+        btnConfirm.setEnabled(false);
+        btnConfirm.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent arg0) {
+
+                //                viewFrom[0] = Double
+                //                        .parseDouble(MainClass.this.fromX.getText());
+                //                viewFrom[1] = Double
+                //                        .parseDouble(MainClass.this.fromY.getText());
+                //                viewFrom[2] = Double
+                //                        .parseDouble(MainClass.this.fromZ.getText());
+                //
+                //                viewTo[0] = Double.parseDouble(MainClass.this.toX.getText());
+                //                viewTo[1] = Double.parseDouble(MainClass.this.toY.getText());
+                //                viewTo[2] = Double.parseDouble(MainClass.this.toZ.getText());
+
+                /*
+                 * Create surface
+                 */
+                if (MainClass.this.curve.controlPoints().size() > 1) {
+
+                    Surface surface = new Surface(MainClass.this.curve,
+                            MainClass.this.surfaceType,
+                            MainClass.this.outputASCII);
+                }
+
+                // CoordinateSystem coord = new CoordinateSystem(viewFrom, viewTo);
+                //                coord.drawCoordinateSystem(canvas3D.getGraphics());
+
+                // TODO: Add generate surface methods
+            }
+        });
+        btnConfirm.setBounds(34, 350, 100, 24);
+        this.frmCseGeometric.getContentPane().add(btnConfirm);
 
         /*
          * Generate curves or generate surfaces or solids
@@ -447,6 +487,7 @@ public class MainClass {
                 revolution.setEnabled(false);
                 numberOfSlices.setEnabled(false);
                 outputASCII.setEnabled(false);
+                btnConfirm.setEnabled(false);
             }
         });
         generateCurves.setBounds(34, 570, 277, 25);
@@ -477,52 +518,20 @@ public class MainClass {
                 revolution.setEnabled(true);
                 numberOfSlices.setEnabled(true);
                 outputASCII.setEnabled(true);
+                btnConfirm.setEnabled(true);
+
+                // Set up coordinate system
+                CoordinateSystem.buildSystem(canvas3D.getGraphics(),
+                        canvas3D.getWidth(), canvas3D.getHeight(),
+                        MainClass.this.curve);
+
+                // TODO: Copy points and curves
 
             }
 
         });
         generateSurfacesSolids.setBounds(34, 600, 277, 25);
         this.frmCseGeometric.getContentPane().add(generateSurfacesSolids);
-
-        JButton btnConfirm = new JButton("Confirm");
-        btnConfirm.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent arg0) {
-                /*
-                 * Create surface
-                 */
-                if (MainClass.this.curve.controlPoints().size() > 1) {
-
-                    viewFrom[0] = Double
-                            .parseDouble(MainClass.this.fromX.getText());
-                    viewFrom[1] = Double
-                            .parseDouble(MainClass.this.fromY.getText());
-                    viewFrom[2] = Double
-                            .parseDouble(MainClass.this.fromZ.getText());
-
-                    viewTo[0] = Double
-                            .parseDouble(MainClass.this.toX.getText());
-                    viewTo[1] = Double
-                            .parseDouble(MainClass.this.toY.getText());
-                    viewTo[2] = Double
-                            .parseDouble(MainClass.this.toZ.getText());
-
-                    Surface surface = new Surface(
-                            MainClass.this.curve.curveType(),
-                            MainClass.this.surfaceType,
-                            MainClass.this.outputASCII);
-                }
-
-                // TODO: Add generate surface methods
-            }
-        });
-        btnConfirm.setBounds(34, 350, 100, 24);
-        this.frmCseGeometric.getContentPane().add(btnConfirm);
-
-        this.textField = new JTextField();
-        this.textField.setBounds(0, 0, 114, 21);
-        this.frmCseGeometric.getContentPane().add(this.textField);
-        this.textField.setColumns(10);
 
     }
 }

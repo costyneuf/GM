@@ -42,8 +42,9 @@ public enum PointType implements Operation {
     }
 
     @Override
-    public void updateCurve(Curve curve, Graphics g) {
+    public List<Point3i> updateCurve(Curve curve, Graphics g) {
         // No code need here.
+        return null;
 
     }
 

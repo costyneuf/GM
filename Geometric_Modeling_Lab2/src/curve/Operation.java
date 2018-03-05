@@ -34,7 +34,7 @@ public interface Operation {
      * @param g
      *            the media for updating the canvas
      */
-    void updateCurve(Curve curve, Graphics g);
+    List<Point3i> updateCurve(Curve curve, Graphics g);
 
     /**
      * Update the curve based on curve status in {@code pt} and redraw it on the

@@ -2,6 +2,7 @@ package curve;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Vector;
 
 import javax.vecmath.Point3i;
 
@@ -31,6 +32,10 @@ public class Curve {
      * Store all points inserted by sequence.
      */
     private List<Point3i> insertPoints;
+    /**
+     * Store a new set of points.
+     */
+    private Vector<Point3i> modifiedPoints = new Vector<Point3i>();
 
     /**
      * Default type of curve is BEZIER.

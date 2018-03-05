@@ -57,7 +57,7 @@ public final class PointsOperation {
 
         g2.setColor(Color.RED);
         g2.drawString("Max # of points for Bezier Curve is 21", 20, 20);
-        g2.drawString("x-y plane", 20, 310);
+        g2.drawString("x-y plane", 300, 270);
 
     }
 

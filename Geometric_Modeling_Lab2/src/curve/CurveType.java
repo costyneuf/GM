@@ -12,10 +12,11 @@ public enum CurveType implements Operation {
      */
     BEZIER {
         @Override
-        public void updateCurve(Curve curve, Graphics g) {
+        public List<Point3i> updateCurve(Curve curve, Graphics g) {
 
             BezierCurve c = new BezierCurve(curve.controlPoints());
             c.generateCurve(g);
+            return c.modifiedPoints();
 
         }
 
@@ -34,12 +35,12 @@ public enum CurveType implements Operation {
      */
     CUBICBSPLINE {
         @Override
-        public void updateCurve(Curve curve, Graphics g) {
+        public List<Point3i> updateCurve(Curve curve, Graphics g) {
 
             CubicUniformBSpline c = new CubicUniformBSpline(
                     curve.controlPoints());
             c.generateCurve(g);
-
+            return c.modifiedPoints();
         }
 
         @Override
