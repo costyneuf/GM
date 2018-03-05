@@ -18,13 +18,18 @@ public enum SurfaceType implements SurfaceOperation {
                 int numberOfSlices) {
 
             List<Point3i> generateRoute = new LinkedList<>();
-            for (int i = 0; i < numberOfSlices; i++) {
+            for (int i = 0; i <= numberOfSlices; i++) {
                 generateRoute.add(new Point3i(controlPoints.get(0).getX(),
                         (int) (controlPoints.get(0).getY()
                                 * Math.cos(Math.PI / numberOfSlices * i)),
                         (int) (controlPoints.get(0).getY()
                                 * Math.sin(Math.PI / numberOfSlices * i))));
+                System.out.println("(" + generateRoute.get(i).getX() + ", "
+                        + generateRoute.get(i).getY() + ", "
+                        + generateRoute.get(i).getZ() + ")");
             }
+
+            System.out.println("____________");
             return generateRoute;
         }
 
@@ -43,8 +48,11 @@ public enum SurfaceType implements SurfaceOperation {
             for (int i = 0; i < numberOfSlices; i++) {
                 generateRoute.add(new Point3i(controlPoints.get(0).getX(),
                         controlPoints.get(0).getY(), 100 * (i + 1)));
-
+                System.out.println("(" + generateRoute.get(i).getX() + ", "
+                        + generateRoute.get(i).getY() + ", "
+                        + generateRoute.get(i).getZ() + ")");
             }
+            System.out.println("____________");
 
             return generateRoute;
         }
