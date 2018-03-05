@@ -459,9 +459,16 @@ public class MainClass {
                             canvas3D.getHeight());
 
                     // Generate surface methods
-                    surface.surfaceType().updateCanvas3D(MainClass.this.curve,
-                            MainClass.this.numberOfSlices,
-                            canvas3D.getGraphics());
+                    if (surface.surfaceType() == SurfaceType.EXTRUSION) {
+                        surface.surfaceType().updateCanvas3D(
+                                MainClass.this.curve, 2,
+                                canvas3D.getGraphics());
+                    } else {
+                        surface.surfaceType().updateCanvas3D(
+                                MainClass.this.curve,
+                                MainClass.this.numberOfSlices,
+                                canvas3D.getGraphics());
+                    }
                 }
 
                 // CoordinateSystem coord = new CoordinateSystem(viewFrom, viewTo);

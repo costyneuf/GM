@@ -16,8 +16,16 @@ public enum SurfaceType implements SurfaceOperation {
         @Override
         public List<Point3i> generateRoute(List<Point3i> controlPoints,
                 int numberOfSlices) {
-            // TODO Auto-generated method stub
-            return null;
+
+            List<Point3i> generateRoute = new LinkedList<>();
+            for (int i = 0; i < numberOfSlices; i++) {
+                generateRoute.add(new Point3i(controlPoints.get(0).getX(),
+                        (int) (controlPoints.get(0).getY()
+                                * Math.cos(Math.PI / numberOfSlices * i)),
+                        (int) (controlPoints.get(0).getY()
+                                * Math.sin(Math.PI / numberOfSlices * i))));
+            }
+            return generateRoute;
         }
 
     },
@@ -32,7 +40,7 @@ public enum SurfaceType implements SurfaceOperation {
              * Initial value: 5, Increment: 5
              */
             List<Point3i> generateRoute = new LinkedList<>();
-            for (int i = 0; i < numberOfSlices / 10; i++) {
+            for (int i = 0; i < numberOfSlices; i++) {
                 generateRoute.add(new Point3i(controlPoints.get(0).getX(),
                         controlPoints.get(0).getY(), 100 * (i + 1)));
 
@@ -84,8 +92,8 @@ public enum SurfaceType implements SurfaceOperation {
                     vertex[2].getY());
             g2.drawLine(vertex[0].getX(), vertex[0].getY(), vertex[3].getX(),
                     vertex[3].getY());
-            g2.drawLine(vertex[3].getX(), vertex[3].getY(), vertex[1].getX(),
-                    vertex[1].getY());
+            g2.drawLine(vertex[1].getX(), vertex[1].getY(), vertex[3].getX(),
+                    vertex[3].getY());
         }
 
     }
@@ -100,15 +108,15 @@ public enum SurfaceType implements SurfaceOperation {
         g.clearRect(0, 0, CoordinateSystem.originX * 2,
                 CoordinateSystem.originY * 2);
 
-        List<Point3i> ctrl1 = new LinkedList<>();
+        //List<Point3i> ctrl1 = new LinkedList<>();
         List<Point3i> ctrl3 = new LinkedList<>();
-        ctrl1.addAll(curve.controlPoints());
+        //ctrl1.addAll(curve.controlPoints());
         ctrl3.addAll(curve.controlPoints());
 
         /*
          * Generate second linked list
          */
-        for (int i = 0; i < numberOfSlices / 10; i++) {
+        for (int i = 0; i < numberOfSlices; i++) {
             /*
              * Modified points
              */
@@ -118,9 +126,9 @@ public enum SurfaceType implements SurfaceOperation {
             int distanceY = poly2.get(0).getY() - poly1.get(0).getY();
             int distanceZ = poly2.get(0).getZ() - poly1.get(0).getZ();
             for (int j = 1; j < poly1.size(); j++) {
-                poly2.add(new Point3i(poly1.get(i).getX() + distanceX,
-                        poly1.get(i).getY() + distanceY,
-                        poly1.get(i).getZ() + distanceZ));
+                poly2.add(new Point3i(poly1.get(j).getX() + distanceX,
+                        poly1.get(j).getY() + distanceY,
+                        poly1.get(j).getZ() + distanceZ));
             }
             drawFacet(poly1, poly2, g);
             poly1.clear();
