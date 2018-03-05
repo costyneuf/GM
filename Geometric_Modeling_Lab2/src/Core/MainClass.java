@@ -1,7 +1,9 @@
 package Core;
 
 import java.awt.Canvas;
+import java.awt.Color;
 import java.awt.Font;
+import java.awt.Graphics2D;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
@@ -20,6 +22,8 @@ import javax.swing.JTextPane;
 import javax.swing.UIManager;
 import javax.vecmath.Point3i;
 
+import org.eclipse.swt.widgets.Shell;
+
 import com.sun.j3d.utils.universe.SimpleUniverse;
 
 import curve.Curve;
@@ -34,7 +38,9 @@ import surface.Triangle2D;
 
 public class MainClass {
 
+    public static Shell shell;
     private Curve curve = new Curve();
+
     private SurfaceOperation surfaceType;
     private ButtonGroup curveChoice = new ButtonGroup();
     private ButtonGroup pointChoice = new ButtonGroup();
@@ -42,6 +48,9 @@ public class MainClass {
     private boolean outputASCII = false;
     private int numberOfSlices;
 
+    public static List<Integer> slope = new LinkedList<>();
+    public static Curve trajectory = new Curve();
+    public static List<Point3i> trajectoryPoints = new LinkedList<>();;
     public JFrame frmCseGeometric;
     public static double[] viewFrom = new double[3];
     public static double[] viewTo = new double[3];
@@ -123,6 +132,36 @@ public class MainClass {
          * Set up a canvas where the points will be input and the curve will be
          * displayed.
          */
+        Canvas canvas_1 = new Canvas();
+        canvas_1.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent arg0) {
+                if (canvas_1.isEnabled()) {
+                    MainClass.trajectory.updateIndexAndList(
+                            new Point3i(arg0.getX(), arg0.getY(), 0));
+                    PointsOperation.updatePoints(
+                            MainClass.trajectory.controlPoints(),
+                            MainClass.trajectory.currentIndex(),
+                            canvas_1.getWidth(), canvas_1.getHeight(),
+                            canvas_1.getGraphics());
+                    if (MainClass.trajectory.controlPoints().size() > 1) {
+                        trajectoryPoints = MainClass.trajectory.curveType()
+                                .updateCurve(MainClass.trajectory,
+                                        canvas_1.getGraphics());
+                    }
+                    Graphics2D g2 = (Graphics2D) canvas_1.getGraphics();
+                    g2.setColor(Color.YELLOW);
+                    g2.drawString("This is y-z plane",
+                            canvas_1.getWidth() - 100,
+                            canvas_1.getHeight() - 60);
+                }
+            }
+        });
+        canvas_1.setEnabled(false);
+        canvas_1.setBackground(Color.DARK_GRAY);
+        canvas_1.setBounds(820, 57, 425, 300);
+        this.frmCseGeometric.getContentPane().add(canvas_1);
+
         Canvas canvas = new Canvas3D(
                 SimpleUniverse.getPreferredConfiguration());
 
@@ -332,6 +371,7 @@ public class MainClass {
             @Override
             public void mouseClicked(MouseEvent e) {
                 MainClass.this.surfaceType = SurfaceType.SWEEP;
+                canvas_1.setEnabled(true);
             }
         });
         sweep.setEnabled(false);
@@ -469,6 +509,7 @@ public class MainClass {
                                 MainClass.this.numberOfSlices,
                                 canvas3D.getGraphics());
                     }
+                    surface.outputASCII();
                 }
 
                 // CoordinateSystem coord = new CoordinateSystem(viewFrom, viewTo);

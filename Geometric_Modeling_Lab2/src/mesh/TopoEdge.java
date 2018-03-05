@@ -18,7 +18,7 @@ class TopoEdge {
     /*
      * Constructor
      */
-    protected TopoEdge() {
+    public TopoEdge() {
         this.v1 = -1;
         this.v2 = -1;
         this.mIncFacets = new Vector<Integer>();
@@ -27,14 +27,14 @@ class TopoEdge {
     /*
      * protected members
      */
-    protected int getVertex(int ind) {
+    public int getVertex(int ind) {
         if (ind == 0) {
             return this.v1;
         }
         return this.v2;
     }
 
-    protected void setVertex(int ind, int v) {
+    public void setVertex(int ind, int v) {
         if (ind == 0) {
             this.v1 = v;
         } else {
@@ -42,19 +42,19 @@ class TopoEdge {
         }
     }
 
-    protected void addIncFacet(int facet_ind) {
+    public void addIncFacet(int facet_ind) {
         this.mIncFacets.add(facet_ind);
     }
 
-    protected int getNumberIncFacets() {
+    public int getNumberIncFacets() {
         return this.mIncFacets.size();
     }
 
-    protected int getIncFacet(int facet_ind) {
+    public int getIncFacet(int facet_ind) {
         return this.mIncFacets.elementAt(facet_ind);
     }
 
-    protected boolean operator(TopoEdge A) {
+    public boolean operator(TopoEdge A) {
         return ((this.v1) == A.getVertex(0) && (this.v2) == A.getVertex(1))
                 || ((this.v1) == A.getVertex(1) && (this.v2) == A.getVertex(0));
     }

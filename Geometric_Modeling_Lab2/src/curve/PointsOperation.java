@@ -107,6 +107,40 @@ public final class PointsOperation {
 
         if (ctrlPoints.size() > 0) {
 
+            /*
+             * Check whether intersection
+             */
+            for (int i = 0; i < currentIndex - 2
+                    && ctrlPoints.size() > 5; i++) {
+                int ax = ctrlPoints.get(i).getX();
+                int ay = ctrlPoints.get(i).getY();
+                int bx = ctrlPoints.get(1 + i).getX();
+                int by = ctrlPoints.get(1 + i).getY();
+                int dx = ctrlPoints.get(currentIndex).getX();
+                int dy = ctrlPoints.get(currentIndex).getY();
+                int cx = ctrlPoints.get(currentIndex - 1).getX();
+                int cy = ctrlPoints.get(currentIndex - 1).getY();
+
+                boolean intersection = true;
+                if (!(Math.min(ax, bx) <= Math.max(cx, dx)
+                        && Math.min(cy, dy) <= Math.max(ay, by)
+                        && Math.min(cx, dx) <= Math.max(ax, bx)
+                        && Math.min(ay, by) <= Math.max(cy, dy))) {
+                    intersection = false;
+                }
+
+                if (intersection) {
+                    double u, v, w, z;
+                    u = (cx - ax) * (by - ay) - (bx - ax) * (cy - ay);
+                    v = (dx - ax) * (by - ay) - (bx - ax) * (dy - ay);
+                    w = (ax - cx) * (dy - cy) - (dx - cx) * (ay - cy);
+                    z = (bx - cx) * (dy - cy) - (dx - cx) * (by - cy);
+                    if (u * v <= 0.00000001 && w * z <= 0.00000001) {
+                        System.err.println("Warining: potential intersection!");
+                    }
+                }
+            }
+
             paintPoints(g[0], ctrlPoints, currentIndex);
             if (ctrlPoints.size() > 1) {
 

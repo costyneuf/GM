@@ -8,6 +8,8 @@ import java.util.List;
 
 import javax.vecmath.Point3i;
 
+import components.simplewriter.SimpleWriter;
+import components.simplewriter.SimpleWriter1L;
 import curve.Curve;
 import mesh.Mesh;
 
@@ -56,5 +58,29 @@ public class Surface {
 
     public SurfaceOperation surfaceType() {
         return this.surfaceType;
+    }
+
+    public void outputASCII() {
+        if (this.outputASCII) {
+            SimpleWriter out = new SimpleWriter1L("ASCII.txt");
+            out.println(
+                    mesh.getNumberVertices() + " " + mesh.getNumberFacets());
+
+            for (int i = 0; i < mesh.getNumberVertices(); i++) {
+                out.println(mesh.getGeomVertex(i).getCo(0) + " "
+                        + mesh.getGeomVertex(i).getCo(1) + " "
+                        + mesh.getGeomVertex(i).getCo(2));
+            }
+
+            for (int i = 0; i < mesh.getNumberFacets(); i++) {
+                for (int j = 0; j < mesh.getFacet(i).getNumberVertices(); j++) {
+                    out.print(mesh.getFacet(i).getNumberVertices() + " ");
+                    out.print(mesh.getFacet(i).getVertexInd(j) + " ");
+                }
+                out.println(" ");
+
+            }
+            out.close();
+        }
     }
 }

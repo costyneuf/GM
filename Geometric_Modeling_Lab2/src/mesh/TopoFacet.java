@@ -12,7 +12,7 @@ import java.util.Vector;
 import components.set.Set;
 import components.set.Set1L;
 
-class TopoFacet {
+public class TopoFacet {
 
     /*
      * Private members
@@ -25,7 +25,7 @@ class TopoFacet {
     /*
      * Constructor
      */
-    protected TopoFacet() {
+    public TopoFacet() {
         this.mIncVerts = new Vector<Integer>();
         this.mIncEdges = new Vector<Integer>();
         this.mIncFacets = new Set1L<Integer>();
@@ -34,39 +34,41 @@ class TopoFacet {
     /*
      * protected members
      */
-    protected void addIncVertex(int v_ind) {
+    public void addIncVertex(int v_ind) {
         this.mIncVerts.add(v_ind);
     }
 
-    protected void addIncEdge(int e_ind) {
+    public void addIncEdge(int e_ind) {
         this.mIncEdges.add(e_ind);
     }
 
-    protected void addIncFacet(int f_ind) {
-        this.mIncFacets.add(f_ind);
+    public void addIncFacet(int f_ind) {
+        if (!this.mIncFacets.contains(f_ind)) {
+            this.mIncFacets.add(f_ind);
+        }
     }
 
-    protected int getNumberVertices() {
+    public int getNumberVertices() {
         return this.mIncVerts.size();
     }
 
-    protected int getVertexInd(int vert_ind) {
+    public int getVertexInd(int vert_ind) {
         return this.mIncVerts.elementAt(vert_ind);
     }
 
-    protected int getNumberEdges() {
+    public int getNumberEdges() {
         return this.mIncEdges.size();
     }
 
-    protected int getIncEdge(int edge_ind) {
+    public int getIncEdge(int edge_ind) {
         return this.mIncEdges.elementAt(edge_ind);
     }
 
-    protected int getNumberFacets() {
+    public int getNumberFacets() {
         return this.mIncFacets.size();
     }
 
-    protected int getIncFacets(int facet_ind) {
+    public int getIncFacets(int facet_ind) {
         int[] toArray = new int[this.mIncFacets.size()];
         int i = 0;
         for (int facet : this.mIncFacets) {

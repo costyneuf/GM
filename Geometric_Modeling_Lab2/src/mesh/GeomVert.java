@@ -4,7 +4,7 @@
 
 package mesh;
 
-class GeomVert {
+public class GeomVert {
 
     /*
      * Private members
@@ -14,7 +14,7 @@ class GeomVert {
     /*
      * Constructor
      */
-    protected GeomVert(float x, float y, float z) {
+    public GeomVert(float x, float y, float z) {
         this.mCo[0] = x;
         this.mCo[1] = y;
         this.mCo[2] = z;
@@ -24,11 +24,11 @@ class GeomVert {
      * protected members
      */
 
-    protected float getCo(int axis) {
+    public float getCo(int axis) {
         return this.mCo[axis];
     }
 
-    protected boolean operator(GeomVert A) {
+    public boolean operator(GeomVert A) {
         return !((this.mCo[0]) != A.getCo(0)) && !((this.mCo[1]) != A.getCo(1))
                 && !((this.mCo[2]) != A.getCo(2));
     }

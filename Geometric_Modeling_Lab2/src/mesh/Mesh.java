@@ -125,7 +125,12 @@ public class Mesh {
             /*
              * Point edge to this facet
              */
-            this.mTopoEdges.elementAt(facet_ind).addIncFacet(e_ind);
+            this.mTopoEdges.elementAt(e_ind).addIncFacet(e_ind);
+
+            /*
+             * Point facet to this edge
+             */
+            this.mTopoFacets.elementAt(facet_ind).addIncEdge(e_ind);
         }
 
         /*
@@ -161,8 +166,8 @@ public class Mesh {
                 if (edge.getIncFacet(j) != facet_ind) {
                     this.mTopoFacets.elementAt(facet_ind)
                             .addIncFacet(edge.getIncFacet(j));
-                    this.mTopoFacets.elementAt(edge.getIncFacet(j))
-                            .addIncFacet(facet_ind);
+                    //                    this.mTopoFacets.elementAt(edge.getIncFacet(j))
+                    //                            .addIncFacet(facet_ind);
                 }
             }
         }
