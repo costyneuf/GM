@@ -10,7 +10,7 @@ import javax.vecmath.Point3i;
 
 import curve.Curve;
 
-public enum SurfaceType implements SurfaceOperation {
+public enum SurfaceType1 implements SurfaceOperation {
     REVOLUTION {
 
         @Override
