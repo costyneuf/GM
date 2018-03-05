@@ -14,13 +14,6 @@ public enum SurfaceType implements SurfaceOperation {
     REVOLUTION {
 
         @Override
-        public void updateCanvas3D(Curve curve, int numberOfSlices,
-                Graphics g) {
-            // TODO Auto-generated method stub
-
-        }
-
-        @Override
         public List<Point3i> generateRoute(List<Point3i> controlPoints,
                 int numberOfSlices) {
             // TODO Auto-generated method stub
@@ -31,54 +24,6 @@ public enum SurfaceType implements SurfaceOperation {
     EXTRUSION {
 
         @Override
-        public void updateCanvas3D(Curve curve, int numberOfSlices,
-                Graphics g) {
-            // TODO Auto-generated method stub
-            List<Point3i> route = this.generateRoute(curve.controlPoints(),
-                    numberOfSlices);
-            List<Point3i> poly1 = new LinkedList<>();
-            poly1.addAll(curve.curveType().updateCurve(curve, g));
-
-            List<Point3i> ctrl1 = new LinkedList<>();
-            ctrl1.addAll(curve.controlPoints());
-
-            /*
-             * Generate second linked list
-             */
-            for (int i = 0; i < numberOfSlices / 5; i++) {
-                /*
-                 * Modified points
-                 */
-                List<Point3i> poly2 = new LinkedList<>();
-                poly2.add(route.get(i));
-                int distanceX = poly2.get(0).getX() - poly1.get(0).getX();
-                int distanceY = poly2.get(0).getY() - poly1.get(0).getY();
-                int distanceZ = poly2.get(0).getZ() - poly1.get(0).getZ();
-                for (int j = 1; j < poly1.size(); j++) {
-                    poly2.add(new Point3i(poly1.get(i).getX() + distanceX,
-                            poly1.get(i).getY() + distanceY,
-                            poly1.get(i).getZ() + distanceZ));
-                }
-                drawFacet(poly1, poly2, g);
-
-                /*
-                 * Control points
-                 */
-                List<Point3i> ctrl2 = new LinkedList<>();
-                int dX = poly2.get(0).getX() - ctrl1.get(0).getX();
-                int dY = poly2.get(0).getY() - ctrl1.get(0).getY();
-                int dZ = poly2.get(0).getZ() - ctrl1.get(0).getZ();
-                for (int j = 0; j < ctrl1.size(); j++) {
-                    ctrl2.add(new Point3i(ctrl1.get(j).getX() + dX,
-                            ctrl1.get(j).getY() + dY,
-                            ctrl1.get(j).getZ() + dZ));
-                }
-                addMesh(ctrl1, ctrl2, g);
-            }
-
-        }
-
-        @Override
         public List<Point3i> generateRoute(List<Point3i> controlPoints,
                 int numberOfSlices) {
             /*
@@ -87,9 +32,10 @@ public enum SurfaceType implements SurfaceOperation {
              * Initial value: 5, Increment: 5
              */
             List<Point3i> generateRoute = new LinkedList<>();
-            for (int i = 0; i < numberOfSlices / 5; i++) {
+            for (int i = 0; i < numberOfSlices / 10; i++) {
                 generateRoute.add(new Point3i(controlPoints.get(0).getX(),
-                        controlPoints.get(0).getY(), 3 * (i + 1)));
+                        controlPoints.get(0).getY(), 100 * (i + 1)));
+
             }
 
             return generateRoute;
@@ -97,13 +43,6 @@ public enum SurfaceType implements SurfaceOperation {
 
     },
     SWEEP {
-
-        @Override
-        public void updateCanvas3D(Curve curve, int numberOfSlices,
-                Graphics g) {
-            // TODO Auto-generated method stub
-
-        }
 
         @Override
         public List<Point3i> generateRoute(List<Point3i> controlPoints,
@@ -151,6 +90,62 @@ public enum SurfaceType implements SurfaceOperation {
 
     }
 
+    @Override
+    public void updateCanvas3D(Curve curve, int numberOfSlices, Graphics g) {
+
+        List<Point3i> route = this.generateRoute(curve.controlPoints(),
+                numberOfSlices);
+        List<Point3i> poly1 = new LinkedList<>();
+        poly1.addAll(curve.curveType().updateCurve(curve, g));
+        g.clearRect(0, 0, CoordinateSystem.originX * 2,
+                CoordinateSystem.originY * 2);
+
+        List<Point3i> ctrl1 = new LinkedList<>();
+        List<Point3i> ctrl3 = new LinkedList<>();
+        ctrl1.addAll(curve.controlPoints());
+        ctrl3.addAll(curve.controlPoints());
+
+        /*
+         * Generate second linked list
+         */
+        for (int i = 0; i < numberOfSlices / 10; i++) {
+            /*
+             * Modified points
+             */
+            List<Point3i> poly2 = new LinkedList<>();
+            poly2.add(route.get(i));
+            int distanceX = poly2.get(0).getX() - poly1.get(0).getX();
+            int distanceY = poly2.get(0).getY() - poly1.get(0).getY();
+            int distanceZ = poly2.get(0).getZ() - poly1.get(0).getZ();
+            for (int j = 1; j < poly1.size(); j++) {
+                poly2.add(new Point3i(poly1.get(i).getX() + distanceX,
+                        poly1.get(i).getY() + distanceY,
+                        poly1.get(i).getZ() + distanceZ));
+            }
+            drawFacet(poly1, poly2, g);
+            poly1.clear();
+            poly1.addAll(poly2);
+
+            /*
+             * Control points
+             */
+            List<Point3i> ctrl2 = new LinkedList<>();
+            int dX = route.get(i).getX() - ctrl3.get(0).getX();
+            int dY = route.get(i).getY() - ctrl3.get(0).getY();
+            int dZ = route.get(i).getZ() - ctrl3.get(0).getZ();
+            for (int j = 0; j < ctrl3.size(); j++) {
+                ctrl2.add(new Point3i(ctrl3.get(j).getX() + dX,
+                        ctrl3.get(j).getY() + dY, ctrl3.get(j).getZ() + dZ));
+            }
+
+            addMesh(ctrl3, ctrl2, g);
+            ctrl3.clear();
+            ctrl3.addAll(ctrl2);
+
+        }
+
+    }
+
     private static void addMesh(List<Point3i> p1, List<Point3i> p2,
             Graphics g) {
 
@@ -181,7 +176,7 @@ public enum SurfaceType implements SurfaceOperation {
                     vertex[3].getY());
             g2.drawLine(vertex[0].getX(), vertex[0].getY(), vertex[2].getX(),
                     vertex[2].getY());
-            g2.drawLine(vertex[0].getX(), vertex[0].getY(), vertex[3].getX(),
+            g2.drawLine(vertex[1].getX(), vertex[0].getY(), vertex[2].getX(),
                     vertex[3].getY());
             g2.drawLine(vertex[3].getX(), vertex[3].getY(), vertex[1].getX(),
                     vertex[1].getY());

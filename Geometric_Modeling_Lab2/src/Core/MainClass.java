@@ -543,8 +543,6 @@ public class MainClass {
                         canvas3D.getWidth(), canvas3D.getHeight(),
                         MainClass.this.curve);
 
-                // TODO: Generate surfaces
-
                 /*
                  * Restore control points
                  */
