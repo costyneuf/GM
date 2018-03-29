@@ -25,12 +25,12 @@ class Initialize {
 			alert("Extrusion");
 		});
 	
-		/* Add canvas */
-		div = document.createElement("div")
-		var canvas = document.createElement('canvas');
-		canvas.id = 'canvas2d';
-		body.appendChild(div);
-		div.appendChild(canvas);
+		// /* Add canvas */
+		// div = document.createElement("div")
+		// var canvas = document.createElement('canvas');
+		// canvas.id = 'canvas2d';
+		// body.appendChild(div);
+		// div.appendChild(canvas);
 	
 		/* Add Surface Buttons */
 		div = document.createElement("div");
@@ -116,6 +116,9 @@ class Initialize {
 		label.setAttribute("for", "Insert");
 		label.innerHTML = "Insert a point";
 		div.appendChild(label);
+
+
+		
 
 	}
 	
