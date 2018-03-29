@@ -33,11 +33,11 @@ div {
 	margin-top: 10px;
 }
 
-canvas {
+/*canvas {
 	width: 1024px;
 	height: 1024px;	
 	background-color: black;
-}
+}*/
 
 input {
 	size: 18px;
@@ -55,3 +55,18 @@ label {
 	margin-right: 50px;
 }
 
+/*div#canvas-frame {
+	border: none;
+	cursor: crosshair;
+	width: 100%;
+	height: 600px;
+	background-color: #EEEEEE;
+}
+*/
+
+#gui {
+  position: absolute;
+  margin-top: 100px;
+  left: 20px;
+  z-index: 10;
+}
