@@ -1,6 +1,6 @@
 
 window.onload = function(){
-	addElements();
+	Initialize.addElements();
 }
 
 window.onload();
