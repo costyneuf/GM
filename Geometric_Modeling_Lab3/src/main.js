@@ -11,23 +11,35 @@ String.prototype.format = function () {
 
 var container;
 var camera, scene, renderer;
-
 var splineHelperObjects = [];
-var splinePointsLength = 0;
-var positions = [];
-var options;
+var transformControl;
 
+/* Control Points */
+var controlPointsLength = 0;
+var indexToBeEditted = 0;
+var positions = [];
 var geometry = new THREE.BoxGeometry( 10, 10, 10 );
 var lineMaterial = new THREE.LineBasicMaterial({
 			color: 0xff0000,
-			opacity: 0.35,
+			opacity: 0.15,
 			linewidth: 1 });
 var lineGeometry;
 var line;
 
+/* Curve */
+var curvePointsLength = 0;
+var curvePoints = [];
+var curveColor = new THREE.Color('skyblue');
+var curveMaterial = new THREE.LineBasicMaterial({
+	color: curveColor,
+	opacity: 0.5,
+	linewidth: 2 });
+var curveGeometry;
+var curve;
+var curveType = "Bezier";
 
-var transformControl;
-var indexToBeEditted = 0;
+/* Surface */
+
 
 var params = {
 	
@@ -123,18 +135,16 @@ function init() {
 	scene.add( transformControl );
 	transformControl.addEventListener( 'change', function( e ) {
 		cancelHideTransorm();
-		updateLine();
 	} );
 	transformControl.addEventListener( 'mouseDown', function( e ) {
 		cancelHideTransorm();
-		updateLine();
 	} );
 	transformControl.addEventListener( 'mouseUp', function( e ) {
 		delayHideTransform();
-		updateLine();
 	} );
 	transformControl.addEventListener( 'objectChange', function( e ) {
 		updateLine();
+		updateCurve();
 	} );
 
 	var dragcontrols = new THREE.DragControls( splineHelperObjects, camera, renderer.domElement ); //
@@ -143,13 +153,11 @@ function init() {
 
 		transformControl.attach( event.object );
 		cancelHideTransorm();
-		updateLine();
 	} );
 
 	dragcontrols.addEventListener( 'hoveroff', function ( event ) {
 
 		delayHideTransform();
-		updateLine();
 	} );
 
 	var hiding;
@@ -168,10 +176,15 @@ function init() {
 		if ( hiding ) clearTimeout( hiding );
 	}
 
+	lineGeometry = new THREE.Geometry();
 	line = new THREE.Line(lineGeometry, lineMaterial);	
-	scene.add(line);	
+	scene.add(line);
+	curveGeometry = new THREE.Geometry();
+	curve = new THREE.Line(curveGeometry, curveMaterial);
+	scene.add(curve);	
 
-	clear();
+	addPoint();
+	addPoint();
 
 }
 
@@ -200,14 +213,82 @@ function addSplineObject( position ) {
 
 }
 
-function bezierCurve() {
+function updateBezierCurve() {
+
+	curvePoints = [];
+	curvePointsLength = 0;
+
+	var factorial = function(n) {
+		var fact = 1;
+		for (var i = 1; i <= n; i++) {
+			fact *= i;
+		}
+		return fact;
+	}		
+	var bernstein = function(n, i, u) {
+		var result = 1.0;        
+        result *= (factorial(n) / factorial(n - i) / factorial(i));        
+        result *= Math.pow(u, i);
+        result *= Math.pow(1.0 - u, n - i);
+        return result;
+	}
+
+	var seg = 0.01;
+	var j = seg;
+
+	curvePoints.push(positions[0]);
+	curvePointsLength++;
+
+	while (j < 1) {
+
+		var p = new THREE.Vector3(0.0, 0.0, 0.0);
+		for (var i = 0; i < controlPointsLength; i++) {
+			p.setX(p.x + positions[i].x * 
+				bernstein(controlPointsLength - 1, i, j));
+			p.setY(p.y + positions[i].y * 
+				bernstein(controlPointsLength - 1, i, j));
+			p.setZ(p.z + positions[i].z * 
+				bernstein(controlPointsLength - 1, i, j));
+		}
+		curvePointsLength++;
+		curvePoints.push(p);
+
+		j += seg;
+	}
+
+	curvePointsLength++;
+	curvePoints.push(positions[controlPointsLength - 1]);
 
 }
+
+function bezierCurve() {
+	curveType = "Bezier";
+	updateBezierCurve();
+}
+
+function updateCurve() {
+	
+	if (curveType === "Bezier" && controlPointsLength > 2) {
+		scene.remove(curve);
+		updateBezierCurve();
+		curveGeometry = new THREE.Geometry();
+		for (var i = 0; i < curvePointsLength; i++){
+			curveGeometry.vertices.push(curvePoints[i]);
+		}
+		curve = new THREE.Line(curveGeometry, curveMaterial);	
+		curve.castShadow = true;
+		curve.receiveShadow = true;
+		splineHelperObjects.push(curve);
+		scene.add(curve);
+	}
+	
+}
+
 
 function updateLine() {
 	scene.remove(line);
 	lineGeometry = new THREE.Geometry();
-	for (var i = 0; i < splinePointsLength; i++){
+	for (var i = 0; i < controlPointsLength; i++){
 		lineGeometry.vertices.push(positions[i]);
 	}
 	line = new THREE.Line(lineGeometry, lineMaterial);	
@@ -219,22 +300,24 @@ function updateLine() {
 
 function addPoint() {
 	
-	splinePointsLength++;
+	controlPointsLength++;
 	positions.push(addSplineObject().position);
 	indexToBeEditted++;
 	updateLine();
+	updateCurve();
 }
 
 function removePoint() {
 	
-	if ( splinePointsLength <= 0 ) {
+	if ( controlPointsLength <= 0 ) {
 		return;
 	}
-	splinePointsLength --;
+	controlPointsLength --;
 	positions.splice(indexToBeEditted - 1, 1);
 	indexToBeEditted--;
 	scene.remove(splineHelperObjects.splice(indexToBeEditted, 1).pop());
 	updateLine();
+	updateCurve();
 }
 
 function insertPoint() {
@@ -242,18 +325,25 @@ function insertPoint() {
 	if ( indexToBeEditted <= 0 ) {
 		return;
 	}
-	splinePointsLength++;
+	controlPointsLength++;
 	positions.splice(indexToBeEditted - 1, 0, addSplineObject().position);
 	indexToBeEditted++;
 	updateLine();
+	updateCurve();
 }
 
 
 function clear() {
-	positions = [];
-	splinePointsLength = 0;
-	indexToBeEditted = 0;
+	while(controlPointsLength > 0){
+		removePoint();
+	}
 	addPoint();
+	scene.remove(curve);
+	curveGeometry = new THREE.Geometry();
+	curve = new THREE.Line(curveGeometry, curveMaterial);
+	curvePointsLength = 0;
+	curvePoints = [];
+	scene.add(curve);	
 }
 
 
