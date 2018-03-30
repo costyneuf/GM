@@ -50,6 +50,28 @@ var controlPolygonGeometry;
 var controlPolygonLine;
 const EXTRUSION_TIME = 7;
 
+/* Mesh */
+var meshArray = [];
+var v1, v2, v3;
+var mesh;
+var meshGeometry = new THREE.Geometry();
+var meshMaterial = new THREE.MeshBasicMaterial();
+
+function addFacet(v1, v2, v3) {
+	
+	meshGeometry = new THREE.Geometry();
+	meshGeometry.vertices.push(v1);
+	meshGeometry.vertices.push(v2);
+	meshGeometry.vertices.push(v3);
+	meshGeometry.faces.push(new THREE.Face3(0, 1 ,2));	
+
+
+	mesh = new THREE.Mesh(meshGeometry, meshMaterial);
+	meshArray.push(mesh);
+	scene.add(mesh);
+}
+
+
 
 var params = {
 	
@@ -90,6 +112,22 @@ function extrusion() {
 		}
 
 		controlPolygon.push(new_position);
+	}
+
+	for (var i = 1; i <= EXTRUSION_TIME; i++) {
+		
+		var temp1 = controlPolygon[i - 1];
+		var temp2 = controlPolygon[i];
+		for (var j = 0; j < controlPointsLength - 1; j++) {
+			var p1 = new THREE.Vector3(temp1[j].x, temp1[j].y, temp1[j].z);
+			var p2 = new THREE.Vector3(temp2[j].x, temp2[j].y, temp2[j].z);
+			var p3 = new THREE.Vector3(temp1[j + 1].x, temp1[j + 1].y, temp1[j + 1].z);
+			addFacet(p1, p2, p3);
+			// var v1 = new THREE.Vector3(temp2[j + 1].x, temp2[j + 1].y, temp2[j + 1].z);
+			// var v2 = new THREE.Vector3(temp2[j].x, temp2[j].y, temp2[j].z);
+			// var v3 = new THREE.Vector3(temp1[j + 1].x, temp1[j + 1].y, temp1[j + 1].z);
+			// addFacet(v1, v2, v3);
+		}
 	}
 
 	updateControlPolygon();
