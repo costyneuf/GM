@@ -9,6 +9,8 @@ String.prototype.format = function () {
 
 };
 
+var objectArray = [];
+
 var container;
 var camera, scene, renderer;
 var splineHelperObjects = [];
@@ -83,9 +85,8 @@ function extrusion() {
 		var new_position = [];
 		for (var j = 0; j < controlPointsLength; j++) {
 			var p = new THREE.Vector3(positions[j].x, positions[j].y, positions[j].z);
-			p.setZ(p.z - i * 70);
-			addSplineObject(p);
-			new_position.push(p);
+			p.setY(p.y - i * 70);			
+			new_position.push(addSplineObject(p).position);
 		}
 
 		controlPolygon.push(new_position);
@@ -100,7 +101,7 @@ function updateControlPolygon() {
 	if (controlPointsLength > 3) {
 
 		for (var i = 0; controlPolygonLine !== undefined && 
-			i < (EXTRUSION_TIME + controlPointsLength); i++) {
+			i <= (EXTRUSION_TIME + controlPointsLength); i++) {
 			scene.remove(controlPolygonLine[i]);
 		}
 
@@ -292,6 +293,7 @@ function addSplineObject( position ) {
 	object.castShadow = true;
 	object.receiveShadow = true;
 	scene.add( object );
+	objectArray.push(object);
 	splineHelperObjects.splice(indexToBeEditted, 0, object);
 	return object;
 
@@ -406,6 +408,7 @@ function removePoint() {
 	positions.splice(indexToBeEditted - 1, 1);
 	indexToBeEditted--;
 	scene.remove(splineHelperObjects.splice(indexToBeEditted, 1).pop());
+
 	updateLine();
 	updateCurve();
 	extrusion();
@@ -427,12 +430,10 @@ function insertPoint() {
 
 function clear() {
 
-	for (var i = 0; controlPointsLength > 3 && i < EXTRUSION_TIME; i++) {
-		var temp = controlPolygon.pop();
-		for (var j = 0; j < controlPointsLength; j++) {
-			scene.remove(temp.pop());
-		}
-	}	
+	for (var i = 0; controlPolygonLine !== [] && 
+		i <= (EXTRUSION_TIME + controlPointsLength); i++) {
+		scene.remove(controlPolygonLine[i]);
+	}
 
 	while(controlPointsLength > 0){
 		removePoint();
@@ -445,6 +446,11 @@ function clear() {
 	curvePointsLength = 0;
 	curvePoints = [];
 	scene.add(curve);
+
+	while(objectArray.length > 0) {
+		scene.remove(objectArray.pop());
+	}
+	
 	
 }
 
