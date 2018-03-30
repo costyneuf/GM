@@ -21,7 +21,7 @@ var positions = [];
 var geometry = new THREE.BoxGeometry( 10, 10, 10 );
 var lineMaterial = new THREE.LineBasicMaterial({
 			color: 0xff0000,
-			opacity: 0.15,
+			opacity: 0.05,
 			linewidth: 1 });
 var lineGeometry;
 var line;
@@ -29,22 +29,30 @@ var line;
 /* Curve */
 var curvePointsLength = 0;
 var curvePoints = [];
-var curveColor = new THREE.Color('skyblue');
+var curveColor = new THREE.Color('blue');
 var curveMaterial = new THREE.LineBasicMaterial({
 	color: curveColor,
 	opacity: 0.5,
 	linewidth: 2 });
 var curveGeometry;
 var curve;
-var curveType = "Bezier";
 
 /* Surface */
+var controlPolygon =[];
+var controlPolygonColor = new THREE.Color('green');
+var controlPolygonMaterial = new THREE.LineBasicMaterial({
+	color: controlPolygonColor,
+	opacity: 0.5,
+	linewidth: 1 });
+var controlPolygonGeometry;
+var controlPolygonLine;
+const EXTRUSION_TIME = 7;
 
 
 var params = {
 	
 	/* Curve */
-	bezierCurve: bezierCurve,
+	bezierCurve: true,
 
 	/* Surface */
 
@@ -55,6 +63,81 @@ var params = {
 	//duplicatePoint: duplicatePoint,
 	clear: clear 
 };
+
+function extrusion() {
+	
+	if (controlPointsLength <= 3){
+		return;
+	}
+
+	controlPolygon = [];
+
+	var temp = [];
+	for (var i = 0; i < controlPointsLength; i++) {
+		var p = positions[i];
+		temp.push(new THREE.Vector3(p.x, p.y, p.z));
+	}
+	controlPolygon.push(temp);
+
+	for (var i = 1; i <= EXTRUSION_TIME; i++) {
+		var new_position = [];
+		for (var j = 0; j < controlPointsLength; j++) {
+			var p = new THREE.Vector3(positions[j].x, positions[j].y, positions[j].z);
+			p.setZ(p.z - i * 70);
+			addSplineObject(p);
+			new_position.push(p);
+		}
+
+		controlPolygon.push(new_position);
+	}
+
+	updateControlPolygon();
+
+}
+
+function updateControlPolygon() {
+
+	if (controlPointsLength > 3) {
+
+		for (var i = 0; controlPolygonLine !== undefined && 
+			i < (EXTRUSION_TIME + controlPointsLength); i++) {
+			scene.remove(controlPolygonLine[i]);
+		}
+
+		controlPolygonLine = [];
+		for (var i = 0; i <= EXTRUSION_TIME; i++) {
+
+			controlPolygonGeometry = new THREE.Geometry();
+			var temp = controlPolygon[i];
+			for (var j = 0; j < controlPointsLength; j++) {
+				controlPolygonGeometry.vertices.push(temp[j]);
+			}
+			
+			var controlPolygonLine_i = new THREE.Line(controlPolygonGeometry, controlPolygonMaterial);
+			scene.add(controlPolygonLine_i);
+			controlPolygonLine.push(controlPolygonLine_i); 
+		}
+
+		for (var i = 0; i < controlPointsLength; i++) {
+			var column_position = [];
+
+			for (var j = 0; j <= EXTRUSION_TIME; j++) {
+				var temp = controlPolygon[j];
+				column_position.push(temp[i]);
+			}
+
+			controlPolygonGeometry = new THREE.Geometry();
+			for (var j = 0; j <= EXTRUSION_TIME; j++) {
+				controlPolygonGeometry.vertices.push(column_position[j]);
+			}
+			var controlPolygonLine_i = new THREE.Line(controlPolygonGeometry, controlPolygonMaterial);
+			scene.add(controlPolygonLine_i); 
+			controlPolygonLine.push(controlPolygonLine_i); 
+		}
+
+	}
+}
+
 
 function init() {
 
@@ -84,7 +167,7 @@ function init() {
 	planeGeometry.rotateX( - Math.PI / 2 );
 	var planeMaterial = new THREE.ShadowMaterial( { opacity: 0.2 } );
 	var plane = new THREE.Mesh( planeGeometry, planeMaterial );
-	plane.position.y = -200;
+	plane.position.y = 100;
 	plane.receiveShadow = true;
 	scene.add( plane );
 
@@ -107,10 +190,8 @@ function init() {
 	var customContainer = document.getElementById('gui');
 	customContainer.appendChild(gui.domElement);
 	
-	var curveMenu = gui.addFolder('Curve');
-	curveMenu.add( params, 'bezierCurve' );
-	curveMenu.open();
-
+	gui.add(params, 'bezierCurve');
+	
 	var editMenu = gui.addFolder('Edit');
 	editMenu.add( params, 'addPoint' );
 	editMenu.add( params, 'removePoint');
@@ -118,6 +199,8 @@ function init() {
 	//editMenu.add( params, 'duplicatePoint');
 	editMenu.add(params, 'clear');
 	editMenu.open();
+
+	gui.open();
 
 	/* Add controls */
 	var controls = new THREE.OrbitControls( camera, renderer.domElement );
@@ -145,6 +228,7 @@ function init() {
 	transformControl.addEventListener( 'objectChange', function( e ) {
 		updateLine();
 		updateCurve();
+		extrusion();
 	} );
 
 	var dragcontrols = new THREE.DragControls( splineHelperObjects, camera, renderer.domElement ); //
@@ -261,14 +345,19 @@ function updateBezierCurve() {
 
 }
 
-function bezierCurve() {
-	curveType = "Bezier";
-	updateBezierCurve();
-}
-
 function updateCurve() {
 	
-	if (curveType === "Bezier" && controlPointsLength > 2) {
+	if (!params.bezierCurve) {
+		scene.remove(curve);
+		curveGeometry = new THREE.Geometry();
+		curve = new THREE.Line(curveGeometry, curveMaterial);
+		curvePointsLength = 0;
+		curvePoints = [];
+		scene.add(curve);	
+		return;
+	}
+
+	if (params.bezierCurve && controlPointsLength > 2) {
 		scene.remove(curve);
 		updateBezierCurve();
 		curveGeometry = new THREE.Geometry();
@@ -305,6 +394,7 @@ function addPoint() {
 	indexToBeEditted++;
 	updateLine();
 	updateCurve();
+	extrusion();
 }
 
 function removePoint() {
@@ -318,6 +408,7 @@ function removePoint() {
 	scene.remove(splineHelperObjects.splice(indexToBeEditted, 1).pop());
 	updateLine();
 	updateCurve();
+	extrusion();
 }
 
 function insertPoint() {
@@ -330,20 +421,31 @@ function insertPoint() {
 	indexToBeEditted++;
 	updateLine();
 	updateCurve();
+	extrusion();
 }
 
 
 function clear() {
+
+	for (var i = 0; controlPointsLength > 3 && i < EXTRUSION_TIME; i++) {
+		var temp = controlPolygon.pop();
+		for (var j = 0; j < controlPointsLength; j++) {
+			scene.remove(temp.pop());
+		}
+	}	
+
 	while(controlPointsLength > 0){
 		removePoint();
 	}
 	addPoint();
+
 	scene.remove(curve);
 	curveGeometry = new THREE.Geometry();
 	curve = new THREE.Line(curveGeometry, curveMaterial);
 	curvePointsLength = 0;
 	curvePoints = [];
-	scene.add(curve);	
+	scene.add(curve);
+	
 }
 
 
