@@ -150,79 +150,71 @@ function updateInput() {
 	}
 	/* Find number of vertices and faces */
 	var i = 0;
-	while (readBuffer.charAt(i) != " ") {
+	while (readBuffer.charAt(i) != " " && readBuffer.charAt(i) != "\t") {
 		i++;
 	}
 	numberOfVertices = parseInt(readBuffer.substring(0, i));
-	readBuffer = readBuffer.substring(i + 1);
-	
-	i = 0;
+	var j = i + 1;
 	while (readBuffer.charAt(i) != "\n") {
 		i++;
 	}
-	numberOfFaces = parseInt(readBuffer.substring(0, i));
-	readBuffer = readBuffer.substring(i + 1);
-	
+	numberOfFaces = parseInt(readBuffer.substring(j, i));
+
+
 	/* Store Vertices */
-	i = 0;
 	vertices = [];
+	i++;
 	for (var m = 0; m < numberOfVertices; m++) {
-		while (readBuffer.charAt(i) != " ") {
+		j = i + 1;
+		while (readBuffer.charAt(i) != " " && readBuffer.charAt(i) != "\t") {
 			i++;
 		}
-		var x = parseFloat(readBuffer.substring(0, i));
-		readBuffer = readBuffer.substring(i + 1);
-		
-		i = 0;
-		while (readBuffer.charAt(i) != " ") {
+		var x = parseFloat(readBuffer.substring(j, i));
+		i++;
+		j = i;
+		while (readBuffer.charAt(i) != " " && readBuffer.charAt(i) != "\t") {
 			i++;
 		}
-		var y = parseFloat(readBuffer.substring(0, i));
-		readBuffer = readBuffer.substring(i + 1);
-		
-		i = 0;
+		var y = parseFloat(readBuffer.substring(j, i));
+		i++;
+		j = i;
 		while (readBuffer.charAt(i) != "\n") {
 			i++;
 		}
-		var z = parseFloat(readBuffer.substring(0, i));
-		readBuffer = readBuffer.substring(i + 1);
-		
-		i = 0;
+		var z = parseFloat(readBuffer.substr(j, i));
 		vertices.push(new THREE.Vector3(x, y, z));
 	}
 
 	/* Store Faces */
 	faces = [];
+	i++;
 	
 	for (var m = 0; m < numberOfFaces; m++) {
-		
-		while (readBuffer.substring(i, i + 1) !== " ") {
+		j = i;
+		while (readBuffer.charAt(i) != " "  && readBuffer.charAt(i) != "\t") {
 			i++;
 		}
-		var verticesOfFace = parseInt(readBuffer.substring(0, i));
-		readBuffer = readBuffer.substring(i + 1);
+		var verticesOfFace = parseInt(readBuffer.substring(j, i));
 		
-		i = 0;		
+		i++;
 		var temp = [];										
 		for (var n = 0; n < verticesOfFace - 1; n++) {
-			
-			while (readBuffer.charAt(i) != " ") {
+			j = i;
+			while (readBuffer.charAt(i) != " " && readBuffer.charAt(i) != "\t") {
 				i++;
 			}
-			var vi = parseInt(readBuffer.substring(0, i));
-			readBuffer = readBuffer.substring(i + 1);
-			
-			i = 0;		
+			var vi = parseInt(readBuffer.substring(j, i));	
+			i++;					
 			temp.push(vi);
 		}					
-		
+		j = i;
 		while (readBuffer.charAt(i) != '\n' && i != readBuffer.length - 1) {
 			i++;
 		}
-		var vi = parseInt(readBuffer.substring(0, i));
-		readBuffer = readBuffer.substring(i + 1);
-		
-		i = 0;			
+		if (i == readBuffer.length - 1) {
+			i++;
+		}
+		var vi = parseInt(readBuffer.substring(j, i));					
 		temp.push(vi);
 		faces.push(temp);
 		
