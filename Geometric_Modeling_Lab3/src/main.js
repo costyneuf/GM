@@ -67,6 +67,7 @@ var v1, v2, v3;
 var mesh;
 var meshGeometry = new THREE.Geometry();
 var meshMaterial = new THREE.MeshBasicMaterial();
+
 var numberOfVertices;
 var numberOfFaces;
 var vertices;
@@ -166,7 +167,7 @@ function updateInput() {
 	vertices = [];
 	i++;
 	for (var m = 0; m < numberOfVertices; m++) {
-		j = i + 1;
+		j = i;
 		while (readBuffer.charAt(i) != " " && readBuffer.charAt(i) != "\t") {
 			i++;
 		}
@@ -190,6 +191,8 @@ function updateInput() {
 	faces = [];
 	i++;
 	
+	clearMesh();
+
 	for (var m = 0; m < numberOfFaces; m++) {
 		j = i;
 		while (readBuffer.charAt(i) != " "  && readBuffer.charAt(i) != "\t") {
@@ -221,7 +224,48 @@ function updateInput() {
 		
 	}
 
+	
 
+	for (var m = 0; m < numberOfFaces; m++) {
+		
+		var oneface = faces.splice(0, 1).pop();
+		for (var n = 0; n <= oneface.length - 2; n += 2) {
+			// var v1 = vertices[faces[m][n]];
+			// var v2 = vertices[faces[m][n + 1]];
+			// var v3; 
+			// if ( n != faces[m].length - 2) {
+			// 	v3 = vertices[faces[m][n + 2]];
+			// } else {
+			// 	v3 = vertices[faces[m][0]];
+			// }
+			// v1 = new THREE.Vector3(v1.x, v1.y, v1.z);
+			// v2 = new THREE.Vector3(v2.x, v2.y, v2.z);
+			// v3 = new THREE.Vector3(v3.x, v3.y, v3.z);
+			// var temp = [];
+			// temp.push(v1);
+			// temp.push(v2);
+			// temp.push(v3);
+			// faces.push(temp);
+			// addFacet(v1,v2,v3);
+
+			var v1, v2, v3;
+			v1 = oneface[n];
+			v2 = oneface[n + 1];
+			if (n != oneface.length - 2) {
+				v3 = oneface[n + 2];
+			} else {
+				v3 = oneface[0];
+			}
+
+			var temp = [parseInt(v1), parseInt(v2), parseInt(v3)];
+			faces.push(temp);
+		}
+		
+	}
+
+	numberOfFaces = faces.length;
+
+	
 }
 
 function handleFiles(files) {
@@ -231,7 +275,8 @@ function handleFiles(files) {
 		var reader = new FileReader();
         if (/text\/\w+/.test(file.type)) {
             reader.onload = function() {
-				readBuffer = this.result;				
+				readBuffer = this.result;
+				updateInput();				
             }
             reader.readAsText(file);
 		}
@@ -250,6 +295,29 @@ function importOFF() {
 
 function exportOFF() {
 
+	var newWindow = window.open();
+	newWindow.document.open()
+	newWindow.document.write("<html><head></head><body>");
+	newWindow.document.write("<p>OFF");
+	newWindow.document.write("<br>" + numberOfVertices + " "+ numberOfFaces + " " + "0");
+	
+	for (var i = 0; i < numberOfVertices; i++)
+	{
+		newWindow.document.write("<br>"+ vertices[i].x + " " + vertices[i].y + " " + vertices[i].z);
+	}
+
+	for (var i = 0; i < numberOfFaces; i++) {
+
+		newWindow.document.write("<br>"+ faces[i].length);
+		for (var j = 0; j < faces[i].length; j++) {
+			newWindow.document.write(" " + faces[i][j]);
+		}
+		//newWindow.document.write("</p>");
+	}
+
+	
+	newWindow.document.write("</p></body></html>");
+	newWindow.document.close();
 }
 
 function copyAndModifyYOfArray(A, row_index, offset) {
@@ -276,7 +344,7 @@ function update3D() {
 	} else {
 		clearControlPolygon();
 	}
-	updateInput();
+	//updateInput();
 }
 
 
