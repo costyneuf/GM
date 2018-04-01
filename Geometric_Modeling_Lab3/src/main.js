@@ -128,8 +128,8 @@ var params = {
 	'Curve Visible': true,
 
 	/* Control Points Generator */
-	'Control Polygon': 'Extrusion',
-	'Control Polygon Visible': false,
+	'Control Polyhedron': 'Extrusion',
+	'Control Polyhedron Visible': false,
 
 	/* Surface Type */
 	'Surface': 'Bezier Surface',
@@ -142,6 +142,7 @@ var params = {
 };
 
 var readBuffer;
+
 
 function updateInput() {
 
@@ -220,6 +221,7 @@ function updateInput() {
 		
 	}
 
+
 }
 
 function handleFiles(files) {
@@ -269,7 +271,7 @@ function update3D() {
 	} else {
 		clearCurvePoints();
 	}
-	if (params["Control Polygon Visible"]){
+	if (params["Control Polyhedron Visible"]){
 		updateControlPolygon();
 	} else {
 		clearControlPolygon();
@@ -299,22 +301,22 @@ function updateExtrusion() {
 		controlPolygon.row++;
 	}
 
-	/* Add Mesh */
-	for (var i = 1; i < controlPolygon.row; i++) {
+	// /* Add Mesh */
+	// for (var i = 1; i < controlPolygon.row; i++) {
 		
-		var temp1 = controlPolygon.positions[i - 1];
-		var temp2 = controlPolygon.positions[i];
-		for (var j = 0; j < controlPolygon.column - 1; j++) {
-			var p1 = new THREE.Vector3(temp1[j].x, temp1[j].y, temp1[j].z);
-			var p2 = new THREE.Vector3(temp2[j].x, temp2[j].y, temp2[j].z);
-			var p3 = new THREE.Vector3(temp1[j + 1].x, temp1[j + 1].y, temp1[j + 1].z);
-			addFacet(p1, p2, p3);
-			var v1 = new THREE.Vector3(temp1[j + 1].x, temp1[j + 1].y, temp1[j + 1].z);
-			var v2 = new THREE.Vector3(temp2[j + 1].x, temp2[j + 1].y, temp2[j + 1].z);
-			var v3 = new THREE.Vector3(temp2[j].x, temp2[j].y, temp2[j].z);
-			addFacet(v1, v2, v3);
-		}
-	}
+	// 	var temp1 = controlPolygon.positions[i - 1];
+	// 	var temp2 = controlPolygon.positions[i];
+	// 	for (var j = 0; j < controlPolygon.column - 1; j++) {
+	// 		var p1 = new THREE.Vector3(temp1[j].x, temp1[j].y, temp1[j].z);
+	// 		var p2 = new THREE.Vector3(temp2[j].x, temp2[j].y, temp2[j].z);
+	// 		var p3 = new THREE.Vector3(temp1[j + 1].x, temp1[j + 1].y, temp1[j + 1].z);
+	// 		addFacet(p1, p2, p3);
+	// 		var v1 = new THREE.Vector3(temp1[j + 1].x, temp1[j + 1].y, temp1[j + 1].z);
+	// 		var v2 = new THREE.Vector3(temp2[j + 1].x, temp2[j + 1].y, temp2[j + 1].z);
+	// 		var v3 = new THREE.Vector3(temp2[j].x, temp2[j].y, temp2[j].z);
+	// 		addFacet(v1, v2, v3);
+	// 	}
+	// }
 
 }
 
@@ -330,7 +332,7 @@ function updateControlPolygon() {
 		clearMesh();
 	}
 
-	if (params["Control Polygon"] === "Extrusion") {
+	if (params["Control Polyhedron"] === "Extrusion") {
 		updateExtrusion();
 	}
 	
@@ -434,10 +436,10 @@ function init() {
 	gui.add(params, 'Curve Visible').onChange(function(){
 		update3D();
 	});
-	gui.add(params, 'Control Polygon', ['Extrusion']).onChange(function(){
+	gui.add(params, 'Control Polyhedron', ['Extrusion']).onChange(function(){
 		update3D();
 	});
-	gui.add(params, 'Control Polygon Visible').onChange(function(){
+	gui.add(params, 'Control Polyhedron Visible').onChange(function(){
 		update3D();
 	});
 	gui.add(params, 'Surface', ['Extrusion', 'Bezier Surface', 'Cubic B-Spline Surface', 
