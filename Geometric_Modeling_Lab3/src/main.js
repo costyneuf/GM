@@ -1,3 +1,4 @@
+
 String.prototype.format = function () {
 	
 	var str = this;
@@ -7,11 +8,12 @@ String.prototype.format = function () {
 	return str;
 };
 
+
 var objectArray = [];
 var geometry = new THREE.BoxGeometry( 20, 20, 20 );
 
 var container;
-var camera, scene, renderer;
+var camera, scene, renderer, spotlight;
 var splineHelperObjects = [];
 var transformControl;
 
@@ -65,6 +67,10 @@ var v1, v2, v3;
 var mesh;
 var meshGeometry = new THREE.Geometry();
 var meshMaterial = new THREE.MeshBasicMaterial();
+var numberOfVertices;
+var numberOfFaces;
+var vertices;
+var faces;
 
 function addFacet(v1, v2, v3) {
 	
@@ -77,10 +83,33 @@ function addFacet(v1, v2, v3) {
 
 	mesh = new THREE.Mesh(meshGeometry, meshMaterial);
 	meshArray.push(mesh);
+	mesh.castShadow = true;
+	mesh.receiveShadow = true;
 	scene.add(mesh);
 }
 
+// function addFacet4(v1, v2, v3, v4) {
+// 	meshGeometry = new THREE.Geometry();
+// 	meshGeometry.vertices.push(v1);
+// 	meshGeometry.vertices.push(v2);
+// 	meshGeometry.vertices.push(v3);
+// 	meshGeometry.vertices.push(v4);
+// 	meshGeometry.faces.push(new THREE.Face4(0, 1 ,2, 3));	
 
+
+// 	mesh = new THREE.Mesh(meshGeometry, meshMaterial);
+// 	meshArray.push(mesh);
+// 	mesh.castShadow = true;
+// 	mesh.receiveShadow = true;
+// 	scene.add(mesh);
+// }
+
+function clearMesh() {
+	while (meshArray.length > 0){
+		scene.remove(meshArray.pop());
+	}
+	meshArray = [];
+}
 
 var params = {
 
@@ -104,11 +133,130 @@ var params = {
 
 	/* Surface Type */
 	'Surface': 'Bezier Surface',
-	'Surface Visible': false
+	'Surface Visible': false,
+
+	/* Import and Export */
+	'Import': importOFF,
+	'Export': exportOFF
 
 };
 
+var readBuffer;
 
+function updateInput() {
+
+	if (typeof(readBuffer) != typeof("string")) {
+		return;
+	}
+	/* Find number of vertices and faces */
+	var i = 0;
+	while (readBuffer.charAt(i) != " ") {
+		i++;
+	}
+	numberOfVertices = parseInt(readBuffer.substring(0, i));
+	readBuffer = readBuffer.substring(i + 1);
+	
+	i = 0;
+	while (readBuffer.charAt(i) != "\n") {
+		i++;
+	}
+	numberOfFaces = parseInt(readBuffer.substring(0, i));
+	readBuffer = readBuffer.substring(i + 1);
+	
+	/* Store Vertices */
+	i = 0;
+	vertices = [];
+	for (var m = 0; m < numberOfVertices; m++) {
+		while (readBuffer.charAt(i) != " ") {
+			i++;
+		}
+		var x = parseFloat(readBuffer.substring(0, i));
+		readBuffer = readBuffer.substring(i + 1);
+		
+		i = 0;
+		while (readBuffer.charAt(i) != " ") {
+			i++;
+		}
+		var y = parseFloat(readBuffer.substring(0, i));
+		readBuffer = readBuffer.substring(i + 1);
+		
+		i = 0;
+		while (readBuffer.charAt(i) != "\n") {
+			i++;
+		}
+		var z = parseFloat(readBuffer.substring(0, i));
+		readBuffer = readBuffer.substring(i + 1);
+		
+		i = 0;
+		vertices.push(new THREE.Vector3(x, y, z));
+	}
+
+	/* Store Faces */
+	faces = [];
+	
+	for (var m = 0; m < numberOfFaces; m++) {
+		
+		while (readBuffer.substring(i, i + 1) !== " ") {
+			i++;
+		}
+		var verticesOfFace = parseInt(readBuffer.substring(0, i));
+		readBuffer = readBuffer.substring(i + 1);
+		
+		i = 0;		
+		var temp = [];										
+		for (var n = 0; n < verticesOfFace - 1; n++) {
+			
+			while (readBuffer.charAt(i) != " ") {
+				i++;
+			}
+			var vi = parseInt(readBuffer.substring(0, i));
+			readBuffer = readBuffer.substring(i + 1);
+			
+			i = 0;		
+			temp.push(vi);
+		}					
+		
+		while (readBuffer.charAt(i) != '\n' && i != readBuffer.length - 1) {
+			i++;
+		}
+		var vi = parseInt(readBuffer.substring(0, i));
+		readBuffer = readBuffer.substring(i + 1);
+		
+		i = 0;			
+		temp.push(vi);
+		faces.push(temp);
+		
+	}
+
+}
+
+function handleFiles(files) {
+	if (files.length) {
+		var file = files[0];
+		
+		var reader = new FileReader();
+        if (/text\/\w+/.test(file.type)) {
+            reader.onload = function() {
+				readBuffer = this.result;				
+            }
+            reader.readAsText(file);
+		}
+		
+		
+	}
+	
+	
+
+}
+
+function importOFF() {
+	var x = document.getElementById('myInput');
+	x.click();
+}
+
+function exportOFF() {
+
+}
 
 function copyAndModifyYOfArray(A, row_index, offset) {
 
@@ -134,6 +282,7 @@ function update3D() {
 	} else {
 		clearControlPolygon();
 	}
+	updateInput();
 }
 
 
@@ -158,23 +307,22 @@ function updateExtrusion() {
 		controlPolygon.row++;
 	}
 
-	// for (var i = 1; i <= EXTRUSION_TIME; i++) {
+	/* Add Mesh */
+	for (var i = 1; i < controlPolygon.row; i++) {
 		
-	// 	var temp1 = controlPolygon[i - 1];
-	// 	var temp2 = controlPolygon[i];
-	// 	for (var j = 0; j < controlPoints.size - 1; j++) {
-	// 		var p1 = new THREE.Vector3(temp1[j].x, temp1[j].y, temp1[j].z);
-	// 		var p2 = new THREE.Vector3(temp2[j].x, temp2[j].y, temp2[j].z);
-	// 		var p3 = new THREE.Vector3(temp1[j + 1].x, temp1[j + 1].y, temp1[j + 1].z);
-	// 		addFacet(p1, p2, p3);
-	// 		// var v1 = new THREE.Vector3(temp2[j + 1].x, temp2[j + 1].y, temp2[j + 1].z);
-	// 		// var v2 = new THREE.Vector3(temp2[j].x, temp2[j].y, temp2[j].z);
-	// 		// var v3 = new THREE.Vector3(temp1[j + 1].x, temp1[j + 1].y, temp1[j + 1].z);
-	// 		// addFacet(v1, v2, v3);
-	// 	}
-	// }
-
-	//updateControlPolygon();
+		var temp1 = controlPolygon.positions[i - 1];
+		var temp2 = controlPolygon.positions[i];
+		for (var j = 0; j < controlPolygon.column - 1; j++) {
+			var p1 = new THREE.Vector3(temp1[j].x, temp1[j].y, temp1[j].z);
+			var p2 = new THREE.Vector3(temp2[j].x, temp2[j].y, temp2[j].z);
+			var p3 = new THREE.Vector3(temp1[j + 1].x, temp1[j + 1].y, temp1[j + 1].z);
+			addFacet(p1, p2, p3);
+			var v1 = new THREE.Vector3(temp1[j + 1].x, temp1[j + 1].y, temp1[j + 1].z);
+			var v2 = new THREE.Vector3(temp2[j + 1].x, temp2[j + 1].y, temp2[j + 1].z);
+			var v3 = new THREE.Vector3(temp2[j].x, temp2[j].y, temp2[j].z);
+			addFacet(v1, v2, v3);
+		}
+	}
 
 }
 
@@ -187,6 +335,7 @@ function updateControlPolygon() {
 	
 	if (controlPolygon.row * controlPolygon.column !== 0) {
 		clearControlPolygon();
+		clearMesh();
 	}
 
 	if (params["Control Polygon"] === "Extrusion") {
@@ -299,7 +448,7 @@ function init() {
 	gui.add(params, 'Control Polygon Visible').onChange(function(){
 		update3D();
 	});
-	gui.add(params, 'Surface', ['Bezier Surface', 'Cubic B-Spline Surface', 
+	gui.add(params, 'Surface', ['Extrusion', 'Bezier Surface', 'Cubic B-Spline Surface', 
 	'Doo Sabin Surface', 'Catmull-Clark Surface', 'Loop Surface']).onChange(function(){
 		update3D();
 	});
@@ -315,6 +464,8 @@ function init() {
 	gui.add( params, 'Insert Point');
 	gui.add( params, 'Duplicate Point');
 	gui.add(params, 'Clear');
+	gui.add(params, 'Import');
+	gui.add(params, 'Export');
 	gui.open();
 
 	/* Add controls */
@@ -455,16 +606,6 @@ function updateBezierCurve() {
 }
 
 function updateCurve() {
-	
-	// if (!params.bezierCurve) {
-	// 	scene.remove(curve);
-	// 	curveGeometry = new THREE.Geometry();
-	// 	curve = new THREE.Line(curveGeometry, curveMaterial);
-	// 	curvePoints.size = 0;
-	// 	curvePoints.positions = [];
-	// 	scene.add(curve);	
-	// 	return;
-	// }
 
 	if (controlPoints.size > 2) {
 		
@@ -583,10 +724,13 @@ function clear() {
 
 	clearControlPolygon();
 
+	clearMesh();
+	
 	while(controlPoints.size > 0){
 		removePoint();
 	}
 	
+
 	clearCurvePoints();
 
 	addPoint();
