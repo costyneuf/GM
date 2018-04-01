@@ -229,7 +229,7 @@ function updateInput() {
 	for (var m = 0; m < numberOfFaces; m++) {
 		
 		var oneface = faces.splice(0, 1).pop();
-		for (var n = 0; n <= oneface.length - 2; n += 2) {
+		for (var n = 1; n <= oneface.length - 2; n++) {
 			// var v1 = vertices[faces[m][n]];
 			// var v2 = vertices[faces[m][n + 1]];
 			// var v3; 
@@ -249,13 +249,10 @@ function updateInput() {
 			// addFacet(v1,v2,v3);
 
 			var v1, v2, v3;
-			v1 = oneface[n];
-			v2 = oneface[n + 1];
-			if (n != oneface.length - 2) {
-				v3 = oneface[n + 2];
-			} else {
-				v3 = oneface[0];
-			}
+			v1 = oneface[0];
+			v2 = oneface[n];		
+			v3 = oneface[n + 1];
+
 
 			var temp = [parseInt(v1), parseInt(v2), parseInt(v3)];
 			faces.push(temp);
