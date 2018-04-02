@@ -45,8 +45,8 @@ var curveGeometry;
 var curve;
 
 /* Surface */
-const EXTRUSION_TIME = 3;
-const OFFSET = 100;
+const EXTRUSION_TIME = 8;
+const OFFSET = 150;
 var controlPolygon = {
 	row: 0,
 	column: 0,
@@ -60,6 +60,16 @@ var controlPolygonGeometry;
 var controlPolygonLine = [];
 
 var subdivisions = 4;
+
+/* Surface in Lab 3 */
+var controlSurface = {
+	m: 0,
+	n: 0,
+	positions:[],
+	u: 0.1,
+	v: 0.1
+};
+
 
 /* Mesh */
 var meshArray = [];
@@ -105,6 +115,206 @@ function addFacet(v1, v2, v3) {
 // 	scene.add(mesh);
 // }
 
+var currentVerticeIndex = -1;
+
+function addMiddlePoints() {
+	
+	controlSurface.positions = [];
+	if (controlPolygon.positions.length <= 0) {
+		return;
+	}
+
+	/* Rows */
+	for (var i = 0; i < controlPolygon.row; i++) {
+		
+		var new_row = [];
+		new_row.push(new THREE.Vector3(controlPolygon.positions[i][0].x, 
+			controlPolygon.positions[i][0].y, controlPolygon.positions[i][0].z));
+		new_row.push(new THREE.Vector3(controlPolygon.positions[i][1].x, 
+			controlPolygon.positions[i][1].y, controlPolygon.positions[i][1].z));
+
+		for (var j = 2; j < controlPolygon.column - 3; j += 2) {
+			new_row.push(new THREE.Vector3(controlPolygon.positions[i][j].x, 
+				controlPolygon.positions[i][j].y, controlPolygon.positions[i][j].z));
+		
+			new_row.push(new THREE.Vector3((controlPolygon.positions[i][j].x + controlPolygon.positions[i][j + 1].x) / 2, 
+			(controlPolygon.positions[i][j].y + controlPolygon.positions[i][j + 1].y) / 2, 
+			(controlPolygon.positions[i][j].z + controlPolygon.positions[i][j + 1].z) / 2));
+
+			new_row.push(new THREE.Vector3(controlPolygon.positions[i][j + 1].x, 
+				controlPolygon.positions[i][j + 1].y, controlPolygon.positions[i][j + 1].z));
+		}
+
+		if (controlPolygon.column % 2 != 0) {
+
+			var j = controlPolygon.column - 3;
+
+			new_row.push(new THREE.Vector3(controlPolygon.positions[i][j].x, 
+				controlPolygon.positions[i][j].y, controlPolygon.positions[i][j].z));
+		
+			new_row.push(new THREE.Vector3((controlPolygon.positions[i][j].x + controlPolygon.positions[i][j + 1].x) / 2, 
+			(controlPolygon.positions[i][j].y + controlPolygon.positions[i][j + 1].y) / 2, 
+			(controlPolygon.positions[i][j].z + controlPolygon.positions[i][j + 1].z) / 2));
+
+			new_row.push(new THREE.Vector3(controlPolygon.positions[i][j + 1].x, 
+				controlPolygon.positions[i][j + 1].y, controlPolygon.positions[i][j + 1].z));
+
+			new_row.push(new THREE.Vector3((controlPolygon.positions[i][j + 2].x + controlPolygon.positions[i][j + 1].x) / 2, 
+			(controlPolygon.positions[i][j + 2].y + controlPolygon.positions[i][j + 1].y) / 2, 
+			(controlPolygon.positions[i][j + 2].z + controlPolygon.positions[i][j + 1].z) / 2));
+
+			new_row.push(new THREE.Vector3(controlPolygon.positions[i][j + 2].x, 
+				controlPolygon.positions[i][j + 2].y, controlPolygon.positions[i][j + 2].z));
+		} else {
+			for (var j = controlPolygon.column - 3; j < controlPolygon.column; j++) {
+				new_row.push(new THREE.Vector3(controlPolygon.positions[i][j].x, 
+					controlPolygon.positions[i][j].y, controlPolygon.positions[i][j].z));
+			}
+		}
+
+		controlSurface.positions.push(new_row);
+
+		if ((i % 2 == 0 && i < controlPolygon.row - 3) || 
+			(controlPolygon.row % 2 != 0 && i == controlPolygon.row - 3) || 
+			(controlPolygon.row % 2 != 0 && i == controlPolygon.row - 2)) {
+			var temp = [];
+			controlSurface.positions.push(temp);
+		}
+	}
+
+	controlSurface.n = controlSurface.positions[0].length;
+	controlSurface.m = controlSurface.length;
+
+	/* Columns */
+	for (var j = 0; j < controlSurface.n; j++) {
+		for (var i = 3; i < controlSurface.m - 1; i += 3 ) {
+			var p1 = controlSurface.positions[i - 1][j];
+			var p2 = controlSurface.positions[i + 1][j];
+			controlSurface.positions[i].push(new THREE.Vector3((p1.x + p2.x) / 2, (p1.y + p2.y) / 2, 
+				(p1.z + p2.z) / 2));
+		}
+
+		if (controlPolygon.row % 2 != 0) {
+			var i = controlSurface.m - 2;
+			var p1 = controlSurface.positions[i - 1][j];
+			var p2 = controlSurface.positions[i + 1][j];
+			controlSurface.positions[i].push(new THREE.Vector3((p1.x + p2.x) / 2, (p1.y + p2.y) / 2, 
+				(p1.z + p2.z) / 2));
+		}
+	}
+
+	
+}
+
+function calculateBezierSurfaceP(u, w, P) {
+	if (P.length != 4 || P[0].length != 4) {
+		alert("Error!");
+		return;
+	}
+
+	var A1, A2, A3, A4;
+	A1 = (1-u)*(1-u)*(1-u);
+	A2 = 3*u*(1-u)*(1-u);
+	A3 = 3*u*u*(1-u);
+	A4 = u*u*u;
+	var A = [A1, A2, A3, A4];
+
+	var B1, B2, B3, B4;
+	B1 = (1-w)*(1-w)*(1-w);
+	B2 = 3*w*(1-w)*(1-w);
+	B3 = 3*w*w*(1-w);
+	B4 = w*w*w;
+	var B = [B1, B2, B3, B4];
+
+	
+	var newA = [];
+	for (var i = 0; i < 4; i++){
+		var x = 0;
+		var y = 0;
+		var z = 0;
+		for (var j = 0; j < 4; j++) {
+			x += A[j] * P[j][i].x;
+			y += A[j] * P[j][i].y;
+			z += A[j] * P[j][i].z;
+		}
+		newA.push(new THREE.Vector3(x, y, z));
+	}
+
+	var result;
+	var x = 0;
+	var y = 0;
+	var z = 0;
+	for (var i = 0; i < 4; i++){
+		x += newA[i].x * B[i]; 
+		y += newA[i].y * B[i]; 
+		z += newA[i].z * B[i]; 
+	}
+	result = new THREE.Vector3(x, y, z);
+	return result;
+}
+
+function updateBezierSurface() {
+
+	vertices = [];
+	faces = [];
+	
+	if (controlPolygon.positions.length <= 0) {
+		return;
+	}
+	
+	addMiddlePoints();
+
+
+	for (var i = 3; i < controlSurface.n; i += 3) {
+		for (var j = 3; j < controlSurface.m; j += 3) {
+			var P = [[controlSurface.positions[i - 3][j - 3], controlSurface.positions[i - 3][j - 2], 
+				controlSurface.positions[i - 3][j - 1], controlSurface.positions[i - 3][j]], 
+				[controlSurface.positions[i - 2][j - 3], controlSurface.positions[i - 2][j - 2], 
+				controlSurface.positions[i - 2][j - 1], controlSurface.positions[i - 2][j]], 
+				[controlSurface.positions[i - 1][j - 3], controlSurface.positions[i - 1][j - 2], 
+				controlSurface.positions[i - 1][j - 1], controlSurface.positions[i - 1][j]], 
+				[controlSurface.positions[i][j - 3], controlSurface.positions[i][j - 2], 
+				controlSurface.positions[i][j - 1], controlSurface.positions[i][j]]];
+			var u = 0;
+			var v = 0;
+			var temp1 = [];
+			while (u <= 1) {
+				var temp2 = [];
+				while (v <= 1) {
+					v += controlSurface.v;
+					temp2.push(calculateBezierSurfaceP(u,w,P));
+				}
+				if (temp1.length > 0) {
+					for (i = 0; i < temp1.length - 1; i++) {
+						var temp3 = [];
+						temp3.push(addVertices(temp1[i]));
+						temp3.push(addVertices(temp1[i + 1]));
+						temp3.push(addVertices(temp2[i + 1]));
+						temp3.push(addVertices(temp2[i]));
+						faces.push(temp3);
+					}
+				}
+				temp1 = copyAndModifyYOfArray(temp2, 0, 0);
+				u += controlSurface.u;
+			}
+		}
+	}
+
+	numberOfVertices = vertices.length;
+	numberOfFaces = faces.length;
+}
+
+function addVertices(v) {
+	vertices.forEach(function(element){
+		if (v.x === element.x && v.y == element.y && v.z == element.z) {
+			return vertices.indexOf(element);
+		}
+	});
+	vertices.push(v);
+	currentVerticeIndex++;
+	return currentVerticeIndex;
+}
+
 function clearMesh() {
 	while (meshArray.length > 0){
 		scene.remove(meshArray.pop());
@@ -127,6 +337,7 @@ var params = {
 	/* Curve */
 	'Curve': 'Bezier Curve',
 	'Curve Visible': true,
+	//'Closed': false,
 
 	/* Control Points Generator */
 	'Control Polyhedron': 'Extrusion',
@@ -342,6 +553,10 @@ function update3D() {
 		clearControlPolygon();
 	}
 	//updateInput();
+	if (params.Surface == "Bezier Surface") {
+		updateBezierSurface();
+	}
+	
 }
 
 
@@ -501,6 +716,11 @@ function init() {
 	gui.add(params, 'Curve Visible').onChange(function(){
 		update3D();
 	});
+	// gui.add(params, 'Closed').onChange(function() {
+	// 	var p = controlPoints.positions[0];
+	// 	controlPoints.positions.push(new THREE.Vector3(p.x, p.y, p.z));
+	// 	update3D();
+	// });
 	gui.add(params, 'Control Polyhedron', ['Extrusion']).onChange(function(){
 		update3D();
 	});
@@ -615,26 +835,28 @@ function addSplineObject( position ) {
 	return object;
 }
 
+function factorial(n) {
+	var fact = 1;
+	for (var i = 1; i <= n; i++) {
+		fact *= i;
+	}
+	return fact;
+}
+
+function bernstein(n, i, u) {
+	
+	var result = 1.0;        
+	result *= (factorial(n) / factorial(n - i) / factorial(i));        
+	result *= Math.pow(u, i);
+	result *= Math.pow(1.0 - u, n - i);
+	return result;
+	
+}
+
 function updateBezierCurve() {
 
 	curvePoints.positions = [];
 	curvePoints.size = 0;
-
-	var factorial = function(n) {
-		var fact = 1;
-		for (var i = 1; i <= n; i++) {
-			fact *= i;
-		}
-		return fact;
-	}
-
-	var bernstein = function(n, i, u) {
-		var result = 1.0;        
-        result *= (factorial(n) / factorial(n - i) / factorial(i));        
-        result *= Math.pow(u, i);
-        result *= Math.pow(1.0 - u, n - i);
-        return result;
-	}
 
 	var seg = 0.01;
 	var j = seg;
@@ -705,7 +927,7 @@ function addPoint() {
 	
 	controlPoints.size++;
 	var object = addSplineObject();
-	controlPoints.positions.push(object.position);
+	controlPoints.positions.splice(controlPoints.nextIndex, 0, object.position);
 	splineHelperObjects.splice(controlPoints.nextIndex, 0, object);
 	controlPoints.nextIndex++;
 	update3D();
