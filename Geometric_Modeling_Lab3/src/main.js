@@ -332,7 +332,106 @@ function addVertices(v) {
 	return currentVerticeIndex;
 }
 
+function basis(i, u) {
+	
+	var result = 0;
+	switch (i) {
+		case 1:
+			result = 1 / 6.0 * (-u * u * u + 3 * u * u - 3 * u + 1);
+			break;
+		case 2:
+			result = 1 / 6.0 * (3 * u * u * u - 6 * u * u + 4);
+			break;
+		case 3:
+			result = 1 / 6.0 * (-3 * u * u * u + 3 * u * u + 3 * u + 1);
+			break;
+		case 4:
+			result = 1 / 6.0 * u * u * u;
+			break;
+		default:
+			break;
+	}
+	return result;
+}
 
+function updateSplinePoints() {
+	
+	currentVerticeIndex = -1;
+	vertices = [];
+	faces = [];
+	controlSurface.positions = [];
+	if (controlPolygon.positions.length <= 0) {
+		return;
+	}
+	controlSurface.m = controlPolygon.row - 1;
+	controlSurface.n = controlPolygon.column - 1;
+
+	var temp1 = [];
+	for (var i = 1; i <= controlSurface.m - 2; i++) {
+		for (var j = 1; j <= controlSurface.n - 2; j++) {
+
+			var P = [];
+			var p00 = controlPolygon.positions[i - 1][j - 1];
+			var p01 = controlPolygon.positions[i - 1][j];
+			var p02 = controlPolygon.positions[i - 1][j + 1];
+			var p03 = controlPolygon.positions[i - 1][j + 1];
+			var p10 = controlPolygon.positions[i][j - 1];
+			var p11 = controlPolygon.positions[i][j];
+			var p12 = controlPolygon.positions[i][j + 1];
+			var p13 = controlPolygon.positions[i][j + 2];
+			var p20 = controlPolygon.positions[i + 1][j - 1];
+			var p21 = controlPolygon.positions[i + 1][j];
+			var p22 = controlPolygon.positions[i + 1][j + 1];
+			var p23 = controlPolygon.positions[i + 1][j + 2];
+			var p30 = controlPolygon.positions[i + 2][j - 1];
+			var p31 = controlPolygon.positions[i + 2][j];
+			var p32 = controlPolygon.positions[i + 2][j + 1];
+			var p33 = controlPolygon.positions[i + 2][j + 2];
+			P = [[p00, p01, p02, p03], [p10, p11, p12, p13], 
+					[p20, p21, p22, p23], [p30, p31, p32, p33]];
+		
+			var u = 0;						
+			while (u <= 1) {
+				var v = 0;
+
+				var temp2 = [];
+				while (v <= 1) {
+
+					var x = 0, y = 0, z = 0;
+
+					for (var k = 0; k < 4; k++) {
+						for (var l = 0; l < 4; l++) {
+							x += basis(k, u) * basis(l, v) * P[k][l].x;
+							y += basis(k, u) * basis(l, v) * P[k][l].y;
+							z += basis(k, u) * basis(l, v) * P[k][l].z;
+						}
+					}
+
+					temp2.push(new THREE.Vector3(x, y, z));
+					v += controlSurface.v;
+				}
+
+				if (temp1.length > 0) {
+					for (var k = 0; k < temp1.length - 2; k++) {
+						var temp3 = [];
+						temp3.push(addVertices(temp1[k]));
+						temp3.push(addVertices(temp1[k + 1]));
+						temp3.push(addVertices(temp2[k + 1]));
+						temp3.push(addVertices(temp2[k]));
+						faces.push(temp3);
+					}
+				}
+				temp1 = copyAndModifyYOfArray(temp2, 0, 0);
+
+				u += controlSurface.u;
+			}
+		}
+	}
+
+	numberOfVertices = vertices.length;
+	numberOfFaces = faces.length;
+
+}
 
 var params = {
 
@@ -566,7 +665,7 @@ function update3D() {
 	}
 	//updateInput();
 	if (params.Surface == "Bezier Surface") {
-		updateBezierSurface();
+		updateSplinePoints();
 	}
 	
 }
