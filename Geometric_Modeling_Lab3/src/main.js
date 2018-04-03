@@ -137,10 +137,11 @@ function addMiddlePoints() {
 			new_row.push(new THREE.Vector3(controlPolygon.positions[i][j].x, 
 				controlPolygon.positions[i][j].y, controlPolygon.positions[i][j].z));
 		
+			
 			new_row.push(new THREE.Vector3((controlPolygon.positions[i][j].x + controlPolygon.positions[i][j + 1].x) / 2, 
 			(controlPolygon.positions[i][j].y + controlPolygon.positions[i][j + 1].y) / 2, 
-			(controlPolygon.positions[i][j].z + controlPolygon.positions[i][j + 1].z) / 2));
-
+			(controlPolygon.positions[i][j].z + controlPolygon.positions[i][j + 1].z) / 2));	
+	
 			new_row.push(new THREE.Vector3(controlPolygon.positions[i][j + 1].x, 
 				controlPolygon.positions[i][j + 1].y, controlPolygon.positions[i][j + 1].z));
 		}
@@ -166,7 +167,7 @@ function addMiddlePoints() {
 			new_row.push(new THREE.Vector3(controlPolygon.positions[i][j + 2].x, 
 				controlPolygon.positions[i][j + 2].y, controlPolygon.positions[i][j + 2].z));
 		} else {
-			for (var j = controlPolygon.column - 3; j < controlPolygon.column; j++) {
+			for (var j = controlPolygon.column - 2; j < controlPolygon.column; j++) {
 				new_row.push(new THREE.Vector3(controlPolygon.positions[i][j].x, 
 					controlPolygon.positions[i][j].y, controlPolygon.positions[i][j].z));
 			}
@@ -174,16 +175,18 @@ function addMiddlePoints() {
 
 		controlSurface.positions.push(new_row);
 
-		if ((i % 2 == 0 && i < controlPolygon.row - 3) || 
+		if (i > 0 && ((i % 2 == 0 && i < controlPolygon.row - 3) || 
 			(controlPolygon.row % 2 != 0 && i == controlPolygon.row - 3) || 
-			(controlPolygon.row % 2 != 0 && i == controlPolygon.row - 2)) {
+			(controlPolygon.row % 2 != 0 && i == controlPolygon.row - 2))) {
 			var temp = [];
 			controlSurface.positions.push(temp);
 		}
 	}
 
 	controlSurface.n = controlSurface.positions[0].length;
-	controlSurface.m = controlSurface.length;
+	controlSurface.m = controlSurface.positions.length;
+
+	
 
 	/* Columns */
 	for (var j = 0; j < controlSurface.n; j++) {
@@ -233,6 +236,8 @@ function calculateBezierSurfaceP(u, w, P) {
 		var y = 0;
 		var z = 0;
 		for (var j = 0; j < 4; j++) {
+
+
 			x += A[j] * P[j][i].x;
 			y += A[j] * P[j][i].y;
 			z += A[j] * P[j][i].z;
@@ -264,9 +269,10 @@ function updateBezierSurface() {
 	
 	addMiddlePoints();
 
-
-	for (var i = 3; i < controlSurface.n; i += 3) {
-		for (var j = 3; j < controlSurface.m; j += 3) {
+	console.log(controlSurface.m);
+	console.log(controlSurface.n);
+	for (var i = 3; i < controlSurface.m; i += 3) {
+		for (var j = 3; j < controlSurface.n; j += 3) {
 			var P = [[controlSurface.positions[i - 3][j - 3], controlSurface.positions[i - 3][j - 2], 
 				controlSurface.positions[i - 3][j - 1], controlSurface.positions[i - 3][j]], 
 				[controlSurface.positions[i - 2][j - 3], controlSurface.positions[i - 2][j - 2], 
@@ -275,22 +281,26 @@ function updateBezierSurface() {
 				controlSurface.positions[i - 1][j - 1], controlSurface.positions[i - 1][j]], 
 				[controlSurface.positions[i][j - 3], controlSurface.positions[i][j - 2], 
 				controlSurface.positions[i][j - 1], controlSurface.positions[i][j]]];
+			console.log(i + "  " + j);
 			var u = 0;
 			var v = 0;
 			var temp1 = [];
 			while (u <= 1) {
 				var temp2 = [];
+				v = 0;
 				while (v <= 1) {
+					
+					temp2.push(calculateBezierSurfaceP(u,v,P));
 					v += controlSurface.v;
-					temp2.push(calculateBezierSurfaceP(u,w,P));
 				}
+
 				if (temp1.length > 0) {
-					for (i = 0; i < temp1.length - 1; i++) {
+					for (var k = 0; k < temp1.length - 2; k++) {
 						var temp3 = [];
-						temp3.push(addVertices(temp1[i]));
-						temp3.push(addVertices(temp1[i + 1]));
-						temp3.push(addVertices(temp2[i + 1]));
-						temp3.push(addVertices(temp2[i]));
+						temp3.push(addVertices(temp1[k]));
+						temp3.push(addVertices(temp1[k + 1]));
+						temp3.push(addVertices(temp2[k + 1]));
+						temp3.push(addVertices(temp2[k]));
 						faces.push(temp3);
 					}
 				}
