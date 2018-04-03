@@ -66,10 +66,16 @@ var controlSurface = {
 	m: 0,
 	n: 0,
 	positions:[],
-	u: 0.1,
-	v: 0.1
+	u: 0.05,
+	v: 0.05
 };
 
+
+/* Geometry */
+var numberOfVertices;
+var numberOfFaces;
+var vertices;
+var faces;
 
 /* Mesh */
 var meshArray = [];
@@ -78,10 +84,6 @@ var mesh;
 var meshGeometry = new THREE.Geometry();
 var meshMaterial = new THREE.MeshBasicMaterial();
 
-var numberOfVertices;
-var numberOfFaces;
-var vertices;
-var faces;
 
 function addFacet(v1, v2, v3) {
 	
@@ -98,22 +100,28 @@ function addFacet(v1, v2, v3) {
 	mesh.receiveShadow = true;
 	scene.add(mesh);
 }
+function addFacet4(v1, v2, v3, v4) {
+	meshGeometry = new THREE.Geometry();
+	meshGeometry.vertices.push(v1);
+	meshGeometry.vertices.push(v2);
+	meshGeometry.vertices.push(v3);
+	meshGeometry.vertices.push(v4);
+	meshGeometry.faces.push(new THREE.Face4(0, 1 ,2, 3));	
 
-// function addFacet4(v1, v2, v3, v4) {
-// 	meshGeometry = new THREE.Geometry();
-// 	meshGeometry.vertices.push(v1);
-// 	meshGeometry.vertices.push(v2);
-// 	meshGeometry.vertices.push(v3);
-// 	meshGeometry.vertices.push(v4);
-// 	meshGeometry.faces.push(new THREE.Face4(0, 1 ,2, 3));	
 
+	mesh = new THREE.Mesh(meshGeometry, meshMaterial);
+	meshArray.push(mesh);
+	mesh.castShadow = true;
+	mesh.receiveShadow = true;
+	scene.add(mesh);
+}
+function clearMesh() {
+	while (meshArray.length > 0){
+		scene.remove(meshArray.pop());
+	}
+	meshArray = [];
+}
 
-// 	mesh = new THREE.Mesh(meshGeometry, meshMaterial);
-// 	meshArray.push(mesh);
-// 	mesh.castShadow = true;
-// 	mesh.receiveShadow = true;
-// 	scene.add(mesh);
-// }
 
 var currentVerticeIndex = -1;
 
@@ -259,7 +267,7 @@ function calculateBezierSurfaceP(u, w, P) {
 }
 
 function updateBezierSurface() {
-
+	currentVerticeIndex = -1;
 	vertices = [];
 	faces = [];
 	
@@ -268,9 +276,7 @@ function updateBezierSurface() {
 	}
 	
 	addMiddlePoints();
-
-	console.log(controlSurface.m);
-	console.log(controlSurface.n);
+	var temp1 = [];
 	for (var i = 3; i < controlSurface.m; i += 3) {
 		for (var j = 3; j < controlSurface.n; j += 3) {
 			var P = [[controlSurface.positions[i - 3][j - 3], controlSurface.positions[i - 3][j - 2], 
@@ -281,10 +287,10 @@ function updateBezierSurface() {
 				controlSurface.positions[i - 1][j - 1], controlSurface.positions[i - 1][j]], 
 				[controlSurface.positions[i][j - 3], controlSurface.positions[i][j - 2], 
 				controlSurface.positions[i][j - 1], controlSurface.positions[i][j]]];
-			console.log(i + "  " + j);
+			
 			var u = 0;
 			var v = 0;
-			var temp1 = [];
+			
 			while (u <= 1) {
 				var temp2 = [];
 				v = 0;
@@ -302,6 +308,7 @@ function updateBezierSurface() {
 						temp3.push(addVertices(temp2[k + 1]));
 						temp3.push(addVertices(temp2[k]));
 						faces.push(temp3);
+						//addFacet4(vertices[temp3[0]], vertices[temp3[1]], vertices[temp3[2]], vertices[temp3[3]]);
 					}
 				}
 				temp1 = copyAndModifyYOfArray(temp2, 0, 0);
@@ -325,12 +332,7 @@ function addVertices(v) {
 	return currentVerticeIndex;
 }
 
-function clearMesh() {
-	while (meshArray.length > 0){
-		scene.remove(meshArray.pop());
-	}
-	meshArray = [];
-}
+
 
 var params = {
 
@@ -569,8 +571,6 @@ function update3D() {
 	
 }
 
-
-
 function updateExtrusion() {
 	
 	if (controlPoints.size <= 3){
@@ -666,7 +666,6 @@ function updateControlPolygon() {
 
 	}
 }
-
 
 function init() {
 
@@ -1001,7 +1000,6 @@ function clearControlPolygon() {
 	controlPolygon.row = 0;
 	controlPolygon.column = 0;
 }
-
 function clearCurvePoints() {
 	scene.remove(curve);
 	curveGeometry = new THREE.Geometry();
@@ -1010,7 +1008,6 @@ function clearCurvePoints() {
 	curvePoints.positions = [];
 	scene.add(curve);
 }
-
 function clear() {
 
 	clearControlPolygon();
@@ -1026,20 +1023,14 @@ function clear() {
 
 	addPoint();
 }
-
-
-
 function animate() {
 	requestAnimationFrame( animate );
 	render();
 	transformControl.update();
 }
-
 function render() {
 	renderer.render( scene, camera );
 }
-
-
 window.onload = function(){
 
 	//Initialize.addElements();
