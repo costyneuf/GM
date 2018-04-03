@@ -276,9 +276,12 @@ function updateBezierSurface() {
 	}
 	
 	addMiddlePoints();
-	var temp1 = [];
-	for (var i = 3; i < controlSurface.m; i += 3) {
-		for (var j = 3; j < controlSurface.n; j += 3) {
+	console.log(controlSurface.positions.length + "  " + controlSurface.positions[0].length);
+	
+	for (var j = 3; j < controlSurface.n; j += 3) {	
+		var temp1 = [];
+		for (var i = 3; i < controlSurface.m; i += 3) {
+			
 			var P = [[controlSurface.positions[i - 3][j - 3], controlSurface.positions[i - 3][j - 2], 
 				controlSurface.positions[i - 3][j - 1], controlSurface.positions[i - 3][j]], 
 				[controlSurface.positions[i - 2][j - 3], controlSurface.positions[i - 2][j - 2], 
@@ -366,9 +369,10 @@ function updateSplinePoints() {
 	controlSurface.m = controlPolygon.row - 1;
 	controlSurface.n = controlPolygon.column - 1;
 
-	var temp1 = [];
-	for (var i = 1; i <= controlSurface.m - 2; i++) {
-		for (var j = 1; j <= controlSurface.n - 2; j++) {
+	
+	for (var j = 1; j <= controlSurface.n - 2; j++) {
+		var temp1 = [];
+		for (var i = 1; i <= controlSurface.m - 2; i++) {
 
 			var P = [];
 			var p00 = controlPolygon.positions[i - 1][j - 1];
@@ -455,7 +459,7 @@ var params = {
 	'Control Polyhedron Visible': false,
 
 	/* Surface Type */
-	'Surface': 'Bezier Surface',
+	'Surface': '',
 	'Surface Visible': false,
 
 	/* Import and Export */
@@ -665,6 +669,8 @@ function update3D() {
 	}
 	//updateInput();
 	if (params.Surface == "Bezier Surface") {
+		updateBezierSurface();
+	} else if (params.Surface == "Cubic B-Spline Surface") {
 		updateSplinePoints();
 	}
 	
