@@ -378,7 +378,7 @@ function updateSplinePoints() {
 			var p00 = controlPolygon.positions[i - 1][j - 1];
 			var p01 = controlPolygon.positions[i - 1][j];
 			var p02 = controlPolygon.positions[i - 1][j + 1];
-			var p03 = controlPolygon.positions[i - 1][j + 1];
+			var p03 = controlPolygon.positions[i - 1][j + 2];
 			var p10 = controlPolygon.positions[i][j - 1];
 			var p11 = controlPolygon.positions[i][j];
 			var p12 = controlPolygon.positions[i][j + 1];
@@ -394,7 +394,7 @@ function updateSplinePoints() {
 			P = [[p00, p01, p02, p03], [p10, p11, p12, p13], 
 					[p20, p21, p22, p23], [p30, p31, p32, p33]];
 		
-			var u = 0;						
+			var u = 0;	
 			while (u <= 1) {
 				var v = 0;
 
@@ -403,11 +403,11 @@ function updateSplinePoints() {
 
 					var x = 0, y = 0, z = 0;
 
-					for (var k = 0; k < 4; k++) {
-						for (var l = 0; l < 4; l++) {
-							x += basis(k, u) * basis(l, v) * P[k][l].x;
-							y += basis(k, u) * basis(l, v) * P[k][l].y;
-							z += basis(k, u) * basis(l, v) * P[k][l].z;
+					for (var k = 1; k <= 4; k++) {
+						for (var l = 1; l <= 4; l++) {
+							x += basis(k, u) * basis(l, v) * P[k - 1][l - 1].x;
+							y += basis(k, u) * basis(l, v) * P[k - 1][l - 1].y;
+							z += basis(k, u) * basis(l, v) * P[k - 1][l - 1].z;
 						}
 					}
 
@@ -460,7 +460,6 @@ var params = {
 
 	/* Surface Type */
 	'Surface': '',
-	'Surface Visible': false,
 
 	/* Import and Export */
 	'Import': importOFF,
@@ -845,9 +844,7 @@ function init() {
 	'Doo Sabin Surface', 'Catmull-Clark Surface', 'Loop Surface']).onChange(function(){
 		update3D();
 	});
-	gui.add(params, 'Surface Visible').onChange(function(){
-		update3D();
-	});
+	
 	gui.add( params, 'Subdivision', 2, 20).step(1).onChange(function(value){
 		subdivisions = value;
 		update3D();
