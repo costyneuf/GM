@@ -6,8 +6,8 @@ h1 {
 }
 
 p {
-	font-size: 16px;
-  	font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+	font-size: 24px;
+  font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
 }
 
 body {
@@ -37,7 +37,7 @@ button:hover {
 /*
 canvas {
 	width: 1024px;
-	height: 1024px;	
+	height: 1024px;
 	background-color: black;
 }
 
@@ -69,4 +69,4 @@ div#canvas-frame {
 #gui {
   font-size: 9px;
   font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
-} 
+}
