@@ -1,10 +1,10 @@
 
 String.prototype.format = function () {
-	
+
 	var str = this;
 	for ( var i = 0; i < arguments.length; i ++ ) {
 		str = str.replace( '{' + i + '}', arguments[ i ] );
-	}	
+	}
 	return str;
 };
 
@@ -76,6 +76,8 @@ var numberOfVertices;
 var numberOfFaces;
 var vertices;
 var faces;
+var edges;
+var edge_faces;
 
 /* Mesh */
 var meshArray = [];
@@ -86,12 +88,12 @@ var meshMaterial = new THREE.MeshBasicMaterial();
 
 
 function addFacet(v1, v2, v3) {
-	
+
 	meshGeometry = new THREE.Geometry();
 	meshGeometry.vertices.push(v1);
 	meshGeometry.vertices.push(v2);
 	meshGeometry.vertices.push(v3);
-	meshGeometry.faces.push(new THREE.Face3(0, 1 ,2));	
+	meshGeometry.faces.push(new THREE.Face3(0, 1 ,2));
 
 
 	mesh = new THREE.Mesh(meshGeometry, meshMaterial);
@@ -106,7 +108,7 @@ function addFacet4(v1, v2, v3, v4) {
 	meshGeometry.vertices.push(v2);
 	meshGeometry.vertices.push(v3);
 	meshGeometry.vertices.push(v4);
-	meshGeometry.faces.push(new THREE.Face4(0, 1 ,2, 3));	
+	meshGeometry.faces.push(new THREE.Face4(0, 1 ,2, 3));
 
 
 	mesh = new THREE.Mesh(meshGeometry, meshMaterial);
@@ -126,7 +128,7 @@ function clearMesh() {
 var currentVerticeIndex = -1;
 
 function addMiddlePoints() {
-	
+
 	controlSurface.positions = [];
 	if (controlPolygon.positions.length <= 0) {
 		return;
@@ -134,23 +136,23 @@ function addMiddlePoints() {
 
 	/* Rows */
 	for (var i = 0; i < controlPolygon.row; i++) {
-		
+
 		var new_row = [];
-		new_row.push(new THREE.Vector3(controlPolygon.positions[i][0].x, 
+		new_row.push(new THREE.Vector3(controlPolygon.positions[i][0].x,
 			controlPolygon.positions[i][0].y, controlPolygon.positions[i][0].z));
-		new_row.push(new THREE.Vector3(controlPolygon.positions[i][1].x, 
+		new_row.push(new THREE.Vector3(controlPolygon.positions[i][1].x,
 			controlPolygon.positions[i][1].y, controlPolygon.positions[i][1].z));
 
 		for (var j = 2; j < controlPolygon.column - 3; j += 2) {
-			new_row.push(new THREE.Vector3(controlPolygon.positions[i][j].x, 
+			new_row.push(new THREE.Vector3(controlPolygon.positions[i][j].x,
 				controlPolygon.positions[i][j].y, controlPolygon.positions[i][j].z));
-		
-			
-			new_row.push(new THREE.Vector3((controlPolygon.positions[i][j].x + controlPolygon.positions[i][j + 1].x) / 2, 
-			(controlPolygon.positions[i][j].y + controlPolygon.positions[i][j + 1].y) / 2, 
-			(controlPolygon.positions[i][j].z + controlPolygon.positions[i][j + 1].z) / 2));	
-	
-			new_row.push(new THREE.Vector3(controlPolygon.positions[i][j + 1].x, 
+
+
+			new_row.push(new THREE.Vector3((controlPolygon.positions[i][j].x + controlPolygon.positions[i][j + 1].x) / 2,
+			(controlPolygon.positions[i][j].y + controlPolygon.positions[i][j + 1].y) / 2,
+			(controlPolygon.positions[i][j].z + controlPolygon.positions[i][j + 1].z) / 2));
+
+			new_row.push(new THREE.Vector3(controlPolygon.positions[i][j + 1].x,
 				controlPolygon.positions[i][j + 1].y, controlPolygon.positions[i][j + 1].z));
 		}
 
@@ -158,33 +160,33 @@ function addMiddlePoints() {
 
 			var j = controlPolygon.column - 3;
 
-			new_row.push(new THREE.Vector3(controlPolygon.positions[i][j].x, 
+			new_row.push(new THREE.Vector3(controlPolygon.positions[i][j].x,
 				controlPolygon.positions[i][j].y, controlPolygon.positions[i][j].z));
-		
-			new_row.push(new THREE.Vector3((controlPolygon.positions[i][j].x + controlPolygon.positions[i][j + 1].x) / 2, 
-			(controlPolygon.positions[i][j].y + controlPolygon.positions[i][j + 1].y) / 2, 
+
+			new_row.push(new THREE.Vector3((controlPolygon.positions[i][j].x + controlPolygon.positions[i][j + 1].x) / 2,
+			(controlPolygon.positions[i][j].y + controlPolygon.positions[i][j + 1].y) / 2,
 			(controlPolygon.positions[i][j].z + controlPolygon.positions[i][j + 1].z) / 2));
 
-			new_row.push(new THREE.Vector3(controlPolygon.positions[i][j + 1].x, 
+			new_row.push(new THREE.Vector3(controlPolygon.positions[i][j + 1].x,
 				controlPolygon.positions[i][j + 1].y, controlPolygon.positions[i][j + 1].z));
 
-			new_row.push(new THREE.Vector3((controlPolygon.positions[i][j + 2].x + controlPolygon.positions[i][j + 1].x) / 2, 
-			(controlPolygon.positions[i][j + 2].y + controlPolygon.positions[i][j + 1].y) / 2, 
+			new_row.push(new THREE.Vector3((controlPolygon.positions[i][j + 2].x + controlPolygon.positions[i][j + 1].x) / 2,
+			(controlPolygon.positions[i][j + 2].y + controlPolygon.positions[i][j + 1].y) / 2,
 			(controlPolygon.positions[i][j + 2].z + controlPolygon.positions[i][j + 1].z) / 2));
 
-			new_row.push(new THREE.Vector3(controlPolygon.positions[i][j + 2].x, 
+			new_row.push(new THREE.Vector3(controlPolygon.positions[i][j + 2].x,
 				controlPolygon.positions[i][j + 2].y, controlPolygon.positions[i][j + 2].z));
 		} else {
 			for (var j = controlPolygon.column - 2; j < controlPolygon.column; j++) {
-				new_row.push(new THREE.Vector3(controlPolygon.positions[i][j].x, 
+				new_row.push(new THREE.Vector3(controlPolygon.positions[i][j].x,
 					controlPolygon.positions[i][j].y, controlPolygon.positions[i][j].z));
 			}
 		}
 
 		controlSurface.positions.push(new_row);
 
-		if (i > 0 && ((i % 2 == 0 && i < controlPolygon.row - 3) || 
-			(controlPolygon.row % 2 != 0 && i == controlPolygon.row - 3) || 
+		if (i > 0 && ((i % 2 == 0 && i < controlPolygon.row - 3) ||
+			(controlPolygon.row % 2 != 0 && i == controlPolygon.row - 3) ||
 			(controlPolygon.row % 2 != 0 && i == controlPolygon.row - 2))) {
 			var temp = [];
 			controlSurface.positions.push(temp);
@@ -194,14 +196,14 @@ function addMiddlePoints() {
 	controlSurface.n = controlSurface.positions[0].length;
 	controlSurface.m = controlSurface.positions.length;
 
-	
+
 
 	/* Columns */
 	for (var j = 0; j < controlSurface.n; j++) {
 		for (var i = 3; i < controlSurface.m - 1; i += 3 ) {
 			var p1 = controlSurface.positions[i - 1][j];
 			var p2 = controlSurface.positions[i + 1][j];
-			controlSurface.positions[i].push(new THREE.Vector3((p1.x + p2.x) / 2, (p1.y + p2.y) / 2, 
+			controlSurface.positions[i].push(new THREE.Vector3((p1.x + p2.x) / 2, (p1.y + p2.y) / 2,
 				(p1.z + p2.z) / 2));
 		}
 
@@ -209,12 +211,12 @@ function addMiddlePoints() {
 			var i = controlSurface.m - 2;
 			var p1 = controlSurface.positions[i - 1][j];
 			var p2 = controlSurface.positions[i + 1][j];
-			controlSurface.positions[i].push(new THREE.Vector3((p1.x + p2.x) / 2, (p1.y + p2.y) / 2, 
+			controlSurface.positions[i].push(new THREE.Vector3((p1.x + p2.x) / 2, (p1.y + p2.y) / 2,
 				(p1.z + p2.z) / 2));
 		}
 	}
 
-	
+
 }
 
 function calculateBezierSurfaceP(u, w, P) {
@@ -237,7 +239,7 @@ function calculateBezierSurfaceP(u, w, P) {
 	B4 = w*w*w;
 	var B = [B1, B2, B3, B4];
 
-	
+
 	var newA = [];
 	for (var i = 0; i < 4; i++){
 		var x = 0;
@@ -258,9 +260,9 @@ function calculateBezierSurfaceP(u, w, P) {
 	var y = 0;
 	var z = 0;
 	for (var i = 0; i < 4; i++){
-		x += newA[i].x * B[i]; 
-		y += newA[i].y * B[i]; 
-		z += newA[i].z * B[i]; 
+		x += newA[i].x * B[i];
+		y += newA[i].y * B[i];
+		z += newA[i].z * B[i];
 	}
 	result = new THREE.Vector3(x, y, z);
 	return result;
@@ -270,35 +272,35 @@ function updateBezierSurface() {
 	currentVerticeIndex = -1;
 	vertices = [];
 	faces = [];
-	
+
 	if (controlPolygon.positions.length <= 0) {
 		return;
 	}
-	
+
 	addMiddlePoints();
 	console.log(controlSurface.positions.length + "  " + controlSurface.positions[0].length);
-	
-	for (var j = 3; j < controlSurface.n; j += 3) {	
+
+	for (var j = 3; j < controlSurface.n; j += 3) {
 		var temp1 = [];
 		for (var i = 3; i < controlSurface.m; i += 3) {
-			
-			var P = [[controlSurface.positions[i - 3][j - 3], controlSurface.positions[i - 3][j - 2], 
-				controlSurface.positions[i - 3][j - 1], controlSurface.positions[i - 3][j]], 
-				[controlSurface.positions[i - 2][j - 3], controlSurface.positions[i - 2][j - 2], 
-				controlSurface.positions[i - 2][j - 1], controlSurface.positions[i - 2][j]], 
-				[controlSurface.positions[i - 1][j - 3], controlSurface.positions[i - 1][j - 2], 
-				controlSurface.positions[i - 1][j - 1], controlSurface.positions[i - 1][j]], 
-				[controlSurface.positions[i][j - 3], controlSurface.positions[i][j - 2], 
+
+			var P = [[controlSurface.positions[i - 3][j - 3], controlSurface.positions[i - 3][j - 2],
+				controlSurface.positions[i - 3][j - 1], controlSurface.positions[i - 3][j]],
+				[controlSurface.positions[i - 2][j - 3], controlSurface.positions[i - 2][j - 2],
+				controlSurface.positions[i - 2][j - 1], controlSurface.positions[i - 2][j]],
+				[controlSurface.positions[i - 1][j - 3], controlSurface.positions[i - 1][j - 2],
+				controlSurface.positions[i - 1][j - 1], controlSurface.positions[i - 1][j]],
+				[controlSurface.positions[i][j - 3], controlSurface.positions[i][j - 2],
 				controlSurface.positions[i][j - 1], controlSurface.positions[i][j]]];
-			
+
 			var u = 0;
 			var v = 0;
-			
+
 			while (u <= 1) {
 				var temp2 = [];
 				v = 0;
 				while (v <= 1) {
-					
+
 					temp2.push(calculateBezierSurfaceP(u,v,P));
 					v += controlSurface.v;
 				}
@@ -336,7 +338,7 @@ function addVertices(v) {
 }
 
 function basis(i, u) {
-	
+
 	var result = 0;
 	switch (i) {
 		case 1:
@@ -358,7 +360,7 @@ function basis(i, u) {
 }
 
 function updateSplinePoints() {
-	
+
 	currentVerticeIndex = -1;
 	vertices = [];
 	faces = [];
@@ -391,10 +393,10 @@ function updateSplinePoints() {
 			var p31 = controlPolygon.positions[i + 2][j];
 			var p32 = controlPolygon.positions[i + 2][j + 1];
 			var p33 = controlPolygon.positions[i + 2][j + 2];
-			P = [[p00, p01, p02, p03], [p10, p11, p12, p13], 
+			P = [[p00, p01, p02, p03], [p10, p11, p12, p13],
 					[p20, p21, p22, p23], [p30, p31, p32, p33]];
-		
-			var u = 0;	
+
+			var u = 0;
 			while (u <= 1) {
 				var v = 0;
 
@@ -417,10 +419,10 @@ function updateSplinePoints() {
 				temp4.push(new THREE.Vector3(temp2[0].x, temp2[0].y, temp2[0].z));
 				if (temp4.length > 0) {
 					temp2.splice(0, 0, temp4.splice(0, 1).pop());
-				}	
+				}
 
 				if (temp1.length > 0) {
-					
+
 					for (var k = 0; k < temp1.length - 2; k++) {
 						var temp3 = [];
 						temp3.push(addVertices(temp1[k]));
@@ -433,7 +435,7 @@ function updateSplinePoints() {
 
 				temp1 = copyAndModifyYOfArray(temp2, 0, 0);
 
-				
+
 				u += controlSurface.u;
 			}
 		}
@@ -451,7 +453,7 @@ var params = {
 	'Remove Point': removePoint,
 	'Insert Point': insertPoint,
 	'Duplicate Point': duplicatePoint,
-	'Clear': clear, 
+	'Clear': clear,
 
 	/* value */
 	'Subdivision': 4,
@@ -522,7 +524,7 @@ function updateInput() {
 	/* Store Faces */
 	faces = [];
 	i++;
-	
+
 	clearMesh();
 
 	for (var m = 0; m < numberOfFaces; m++) {
@@ -531,18 +533,18 @@ function updateInput() {
 			i++;
 		}
 		var verticesOfFace = parseInt(readBuffer.substring(j, i));
-		
+
 		i++;
-		var temp = [];										
+		var temp = [];
 		for (var n = 0; n < verticesOfFace - 1; n++) {
 			j = i;
 			while (readBuffer.charAt(i) != " " && readBuffer.charAt(i) != "\t") {
 				i++;
 			}
-			var vi = parseInt(readBuffer.substring(j, i));	
-			i++;					
+			var vi = parseInt(readBuffer.substring(j, i));
+			i++;
 			temp.push(vi);
-		}					
+		}
 		j = i;
 		while (readBuffer.charAt(i) != '\n' && i != readBuffer.length - 1) {
 			i++;
@@ -550,21 +552,23 @@ function updateInput() {
 		if (i == readBuffer.length - 1) {
 			i++;
 		}
-		var vi = parseInt(readBuffer.substring(j, i));					
+		var vi = parseInt(readBuffer.substring(j, i));
 		temp.push(vi);
 		faces.push(temp);
-		
+
 	}
 
-	
+}
+
+function triangulation() {
 
 	for (var m = 0; m < numberOfFaces; m++) {
-		
+
 		var oneface = faces.splice(0, 1).pop();
 		for (var n = 1; n <= oneface.length - 2; n++) {
 			// var v1 = vertices[faces[m][n]];
 			// var v2 = vertices[faces[m][n + 1]];
-			// var v3; 
+			// var v3;
 			// if ( n != faces[m].length - 2) {
 			// 	v3 = vertices[faces[m][n + 2]];
 			// } else {
@@ -582,38 +586,36 @@ function updateInput() {
 
 			var v1, v2, v3;
 			v1 = oneface[0];
-			v2 = oneface[n];		
+			v2 = oneface[n];
 			v3 = oneface[n + 1];
 
 
 			var temp = [parseInt(v1), parseInt(v2), parseInt(v3)];
 			faces.push(temp);
 		}
-		
+
 	}
-
 	numberOfFaces = faces.length;
-
 	
 }
 
 function handleFiles(files) {
 	if (files.length) {
 		var file = files[0];
-		
+
 		var reader = new FileReader();
         if (/text\/\w+/.test(file.type)) {
             reader.onload = function() {
 				readBuffer = this.result;
-				updateInput();				
+				updateInput();
             }
             reader.readAsText(file);
 		}
-		
-		
+
+
 	}
-	
-	
+
+
 
 }
 
@@ -629,7 +631,7 @@ function exportOFF() {
 	newWindow.document.write("<html><head></head><body>");
 	newWindow.document.write("<p>OFF");
 	newWindow.document.write("<br>" + numberOfVertices + " "+ numberOfFaces + " " + "0");
-	
+
 	for (var i = 0; i < numberOfVertices; i++)
 	{
 		newWindow.document.write("<br>"+ vertices[i].x + " " + vertices[i].y + " " + vertices[i].z);
@@ -644,7 +646,7 @@ function exportOFF() {
 		//newWindow.document.write("</p>");
 	}
 
-	
+
 	newWindow.document.write("</p></body></html>");
 	newWindow.document.close();
 }
@@ -679,11 +681,11 @@ function update3D() {
 	} else if (params.Surface == "Cubic B-Spline Surface") {
 		updateSplinePoints();
 	}
-	
+
 }
 
 function updateExtrusion() {
-	
+
 	if (controlPoints.size <= 3){
 		return;
 	}
@@ -704,7 +706,7 @@ function updateExtrusion() {
 
 	// /* Add Mesh */
 	// for (var i = 1; i < controlPolygon.row; i++) {
-		
+
 	// 	var temp1 = controlPolygon.positions[i - 1];
 	// 	var temp2 = controlPolygon.positions[i];
 	// 	for (var j = 0; j < controlPolygon.column - 1; j++) {
@@ -727,7 +729,7 @@ function updateControlPolygon() {
 		return;
 	}
 
-	
+
 	if (controlPolygon.row * controlPolygon.column !== 0) {
 		clearControlPolygon();
 		clearMesh();
@@ -736,7 +738,7 @@ function updateControlPolygon() {
 	if (params["Control Polyhedron"] === "Extrusion") {
 		updateExtrusion();
 	}
-	
+
 	if (controlPolygon.row * controlPolygon.column !== 0){
 		for (var i = 1; i < controlPolygon.row; i++) {
 			for (var j = 0; j < controlPolygon.column; j++) {
@@ -750,19 +752,19 @@ function updateControlPolygon() {
 
 			controlPolygonGeometry = new THREE.Geometry();
 			controlPolygonGeometry.vertices = copyAndModifyYOfArray(
-				controlPolygon.positions[i], 0, OFFSET);		
+				controlPolygon.positions[i], 0, OFFSET);
 			var new_controlPolygonLine = new THREE.Line(
 				controlPolygonGeometry, controlPolygonMaterial);
 			scene.add(new_controlPolygonLine);
-			controlPolygonLine.push(new_controlPolygonLine); 
+			controlPolygonLine.push(new_controlPolygonLine);
 		}
 
 		for (var i = 0; i < controlPolygon.column; i++) {
-			
+
 			var column_position = [];
 			for (var j = 0; j < controlPolygon.row; j++) {
-				var p = new THREE.Vector3(controlPolygon.positions[j][i].x, 
-					controlPolygon.positions[j][i].y, controlPolygon.positions[j][i].z);			
+				var p = new THREE.Vector3(controlPolygon.positions[j][i].x,
+					controlPolygon.positions[j][i].y, controlPolygon.positions[j][i].z);
 				column_position.push(p);
 			}
 
@@ -771,8 +773,8 @@ function updateControlPolygon() {
 					column_position, 0, OFFSET);
 			var new_controlPolygonLine = new THREE.Line(
 				controlPolygonGeometry, controlPolygonMaterial);
-			scene.add(new_controlPolygonLine); 
-			controlPolygonLine.push(new_controlPolygonLine); 
+			scene.add(new_controlPolygonLine);
+			controlPolygonLine.push(new_controlPolygonLine);
 		}
 
 	}
@@ -828,11 +830,11 @@ function init() {
 	var gui = new dat.GUI({autoPlace: false, width: 512, height: 700});
 	var customContainer = document.getElementById('gui');
 	customContainer.appendChild(gui.domElement);
-	
+
 	gui.add(params, 'Curve', ['Bezier Curve']).onChange(function(){
 		update3D();
 	});
-	
+
 	gui.add(params, 'Curve Visible').onChange(function(){
 		update3D();
 	});
@@ -847,11 +849,11 @@ function init() {
 	gui.add(params, 'Control Polyhedron Visible').onChange(function(){
 		update3D();
 	});
-	gui.add(params, 'Surface', ['Extrusion', 'Bezier Surface', 'Cubic B-Spline Surface', 
+	gui.add(params, 'Surface', ['Extrusion', 'Bezier Surface', 'Cubic B-Spline Surface',
 	'Doo Sabin Surface', 'Catmull-Clark Surface', 'Loop Surface']).onChange(function(){
 		update3D();
 	});
-	
+
 	gui.add( params, 'Subdivision', 2, 20).step(1).onChange(function(value){
 		subdivisions = value;
 		update3D();
@@ -922,11 +924,11 @@ function init() {
 	}
 
 	lineGeometry = new THREE.Geometry();
-	line = new THREE.Line(lineGeometry, lineMaterial);	
+	line = new THREE.Line(lineGeometry, lineMaterial);
 	scene.add(line);
 	curveGeometry = new THREE.Geometry();
 	curve = new THREE.Line(curveGeometry, curveMaterial);
-	scene.add(curve);	
+	scene.add(curve);
 
 	addPoint();
 	addPoint();
@@ -949,7 +951,7 @@ function addSplineObject( position ) {
 	object.castShadow = true;
 	object.receiveShadow = true;
 	scene.add( object );
-	
+
 	return object;
 }
 
@@ -962,13 +964,13 @@ function factorial(n) {
 }
 
 function bernstein(n, i, u) {
-	
-	var result = 1.0;        
-	result *= (factorial(n) / factorial(n - i) / factorial(i));        
+
+	var result = 1.0;
+	result *= (factorial(n) / factorial(n - i) / factorial(i));
 	result *= Math.pow(u, i);
 	result *= Math.pow(1.0 - u, n - i);
 	return result;
-	
+
 }
 
 function updateBezierCurve() {
@@ -986,11 +988,11 @@ function updateBezierCurve() {
 
 		var p = new THREE.Vector3(0.0, 0.0, 0.0);
 		for (var i = 0; i < controlPoints.size; i++) {
-			p.setX(p.x + controlPoints.positions[i].x * 
+			p.setX(p.x + controlPoints.positions[i].x *
 				bernstein(controlPoints.size - 1, i, j));
-			p.setY(p.y + controlPoints.positions[i].y * 
+			p.setY(p.y + controlPoints.positions[i].y *
 				bernstein(controlPoints.size - 1, i, j));
-			p.setZ(p.z + controlPoints.positions[i].z * 
+			p.setZ(p.z + controlPoints.positions[i].z *
 				bernstein(controlPoints.size - 1, i, j));
 		}
 		curvePoints.size++;
@@ -1007,7 +1009,7 @@ function updateBezierCurve() {
 function updateCurve() {
 
 	if (controlPoints.size > 2) {
-		
+
 		scene.remove(curve);
 
 		if (params.Curve === "Bezier Curve")
@@ -1019,12 +1021,12 @@ function updateCurve() {
 		for (var i = 0; i < curvePoints.size; i++){
 			curveGeometry.vertices.push(curvePoints.positions[i]);
 		}
-		curve = new THREE.Line(curveGeometry, curveMaterial);	
+		curve = new THREE.Line(curveGeometry, curveMaterial);
 		curve.castShadow = true;
 		curve.receiveShadow = true;
 		scene.add(curve);
 	}
-	
+
 }
 
 
@@ -1035,14 +1037,14 @@ function updateLine() {
 	for (var i = 0; i < controlPoints.size; i++){
 		lineGeometry.vertices.push(controlPoints.positions[i]);
 	}
-	line = new THREE.Line(lineGeometry, lineMaterial);	
+	line = new THREE.Line(lineGeometry, lineMaterial);
 	line.castShadow = true;
 	line.receiveShadow = true;
 	scene.add(line);
 }
 
 function addPoint() {
-	
+
 	controlPoints.size++;
 	var object = addSplineObject();
 	controlPoints.positions.splice(controlPoints.nextIndex, 0, object.position);
@@ -1052,7 +1054,7 @@ function addPoint() {
 }
 
 function duplicatePoint() {
-	
+
 	controlPoints.size++;
 	var object = controlPoints.positions[controlPoints.nextIndex - 1];
 	var new_object = addSplineObject(
@@ -1064,7 +1066,7 @@ function duplicatePoint() {
 }
 
 function removePoint() {
-	
+
 	if ( controlPoints.size <= 0 ) {
 		return;
 	}
@@ -1076,7 +1078,7 @@ function removePoint() {
 }
 
 function insertPoint() {
-	
+
 	if ( controlPoints.nextIndex <= 0 ) {
 		return;
 	}
@@ -1092,17 +1094,17 @@ function insertPoint() {
 function clearControlPolygon() {
 
 	/* Clear canvas */
-	for (var i = 0; controlPolygonLine !== [] && 
-		i < controlPolygon.row + controlPolygon.column; i++) {			
-		scene.remove(controlPolygonLine[i]);	
+	for (var i = 0; controlPolygonLine !== [] &&
+		i < controlPolygon.row + controlPolygon.column; i++) {
+		scene.remove(controlPolygonLine[i]);
 	}
 
-	
+
 	while(objectArray.length > 0) {
 		//splineHelperObjects.splice(controlPoints.nextIndex, 1);
 		scene.remove(objectArray.pop());
 	}
-	
+
 	controlPolygonLine = [];
 	objectArray = [];
 	controlPolygon.positions = [];
@@ -1122,11 +1124,11 @@ function clear() {
 	clearControlPolygon();
 
 	clearMesh();
-	
+
 	while(controlPoints.size > 0){
 		removePoint();
 	}
-	
+
 
 	clearCurvePoints();
 
@@ -1143,7 +1145,7 @@ function render() {
 window.onload = function(){
 
 	//Initialize.addElements();
-	
+
 	var body = document.getElementsByTagName("body")[0];
 	var div;
 
@@ -1154,7 +1156,7 @@ window.onload = function(){
 	var gui = document.createElement("div");
 	gui.setAttribute("id", 'gui');
 	div.appendChild(gui);
-	
+
 
 	init();
 	animate();
@@ -1162,5 +1164,3 @@ window.onload = function(){
 }
 
 window.onload();
-
-
