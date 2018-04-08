@@ -517,8 +517,8 @@ function updateCatmullClark() {
 		alert("Invalid Vertices and Faces Data!");
 	}
 
-	addToEdges();
 	rectangulation();
+	addToEdges();
 
 	/* Clear vertices and faces */
 	currentVerticeIndex = -1;
@@ -544,6 +544,74 @@ function updateCatmullClark() {
 	/* End of function */
 	numberOfVertices = vertices.length;
 	numberOfFaces = faces.length;
+}
+function rectangulation() {
+
+	currentVerticeIndex = numberOfVertices - 1;
+	for (var m = 0; m < numberOfFaces; m++) {
+
+		var oneface = faces.splice(0, 1).pop();
+		if (oneface.length < 4) {
+			alert("Fail to rectangulation! Please re-import a file!");
+			vertices = [];
+			faces = [];
+			edge_faces = [];
+			currentEdgeIndex = -1;
+			currentVerticeIndex = -1;
+			return;
+		}
+		if (oneface.length > 4) {
+			/* Even number of vertices of each face */
+			if (oneface.length % 2 == 0) {
+				for (var i = 1; oneface.length - i != 3; i += 2) {
+					var v1, v2, v3, v4;
+					v1 = oneface[0];
+					v2 = oneface[i];
+					v3 = oneface[i + 1];
+					v4 = oneface[i + 2];
+					var temp = [parseInt(v1), parseInt(v2), parseInt(v3), parseInt(v4)];
+					faces.push(temp);
+				}
+			}
+			/* Odd number of vertices of each face */
+			else {
+				for (var i = 1; oneface.length - i != 4; i += 2) {
+					var v1, v2, v3, v4;
+					v1 = oneface[0];
+					v2 = oneface[i];
+					v3 = oneface[i + 1];
+					v4 = oneface[i + 2];
+					var temp = [parseInt(v1), parseInt(v2), parseInt(v3), parseInt(v4)];
+					faces.push(temp);
+				}
+
+				var v0, v1, v2, v3, v4, vAdd;
+				var i = oneface.length - 4;
+				v0 = oneface[0];
+				v1 = oneface[i];
+				v2 = oneface[i + 1];
+				v3 = oneface[i + 2];
+				v4 = oneface[i + 3];
+
+				var p0, p1, pAdd;
+				p0 = new THREE.Vector3(vertices[v0].x, vertices[v0].y, vertices[v0].z);
+				p1 = new THREE.Vector3(vertices[v1].x, vertices[v1].y, vertices[v1].z);
+				pAdd = new THREE.Vector3((p0.x + p1.x) / 2, (p0.y + p1.y) / 2, (p0.z + p1.z) / 2);
+				vAdd = addVertices(pAdd);
+
+				var temp1 = [parseInt(v0), parseInt(vAdd), parseInt(v3), parseInt(v4)];
+				var temp2 = [parseInt(vAdd), parseInt(v1), parseInt(v2), parseInt(v3)];
+				faces.push(temp1);
+				faces.push(temp2);
+ 			}
+		}
+		else {
+			faces.push(oneface);
+		}	
+	}
+
+	numberOfFaces = faces.length;
+	numberOfVertices = vertices.length;
 }
 
 /* Loop Surface */
@@ -552,8 +620,8 @@ function updateLoop() {
 		alert("Invalid Vertices and Faces Data!");
 	}
 
-	addToEdges();
 	triangulation();
+	addToEdges();
 
 	/* Clear vertices and faces */
 	currentVerticeIndex = -1;
@@ -580,7 +648,44 @@ function updateLoop() {
 	numberOfVertices = vertices.length;
 	numberOfFaces = faces.length;
 }
+function triangulation() {
 
+	for (var m = 0; m < numberOfFaces; m++) {
+
+		var oneface = faces.splice(0, 1).pop();
+		for (var n = 1; n <= oneface.length - 2; n++) {
+			// var v1 = vertices[faces[m][n]];
+			// var v2 = vertices[faces[m][n + 1]];
+			// var v3;
+			// if ( n != faces[m].length - 2) {
+			// 	v3 = vertices[faces[m][n + 2]];
+			// } else {
+			// 	v3 = vertices[faces[m][0]];
+			// }
+			// v1 = new THREE.Vector3(v1.x, v1.y, v1.z);
+			// v2 = new THREE.Vector3(v2.x, v2.y, v2.z);
+			// v3 = new THREE.Vector3(v3.x, v3.y, v3.z);
+			// var temp = [];
+			// temp.push(v1);
+			// temp.push(v2);
+			// temp.push(v3);
+			// faces.push(temp);
+			// addFacet(v1,v2,v3);
+
+			var v1, v2, v3;
+			v1 = oneface[0];
+			v2 = oneface[n];
+			v3 = oneface[n + 1];
+
+
+			var temp = [parseInt(v1), parseInt(v2), parseInt(v3)];
+			faces.push(temp);
+		}
+
+	}
+	numberOfFaces = faces.length;
+
+}
 /* Import and Export */
 var readBuffer;
 
@@ -745,45 +850,6 @@ function addToEdges() {
 //
 // 	return currentEdgeIndex;
 // }
-
-function triangulation() {
-
-	for (var m = 0; m < numberOfFaces; m++) {
-
-		var oneface = faces.splice(0, 1).pop();
-		for (var n = 1; n <= oneface.length - 2; n++) {
-			// var v1 = vertices[faces[m][n]];
-			// var v2 = vertices[faces[m][n + 1]];
-			// var v3;
-			// if ( n != faces[m].length - 2) {
-			// 	v3 = vertices[faces[m][n + 2]];
-			// } else {
-			// 	v3 = vertices[faces[m][0]];
-			// }
-			// v1 = new THREE.Vector3(v1.x, v1.y, v1.z);
-			// v2 = new THREE.Vector3(v2.x, v2.y, v2.z);
-			// v3 = new THREE.Vector3(v3.x, v3.y, v3.z);
-			// var temp = [];
-			// temp.push(v1);
-			// temp.push(v2);
-			// temp.push(v3);
-			// faces.push(temp);
-			// addFacet(v1,v2,v3);
-
-			var v1, v2, v3;
-			v1 = oneface[0];
-			v2 = oneface[n];
-			v3 = oneface[n + 1];
-
-
-			var temp = [parseInt(v1), parseInt(v2), parseInt(v3)];
-			faces.push(temp);
-		}
-
-	}
-	numberOfFaces = faces.length;
-
-}
 
 function handleFiles(files) {
 	if (files.length) {
