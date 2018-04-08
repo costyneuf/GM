@@ -479,6 +479,82 @@ function updateSplinePoints() {
 /* Doo-Sabin Surface */
 function updateDooSabin() {
 
+	if (numberOfFaces == 0 || numberOfVertices == 0) {
+		alert("Invalid Vertices and Faces Data!");
+	}
+
+	addToEdges();
+
+	/* Clear vertices and faces */
+	currentVerticeIndex = -1;
+	var vertices_temp = copyAndModifyYOfArray(vertices, 0, 0);
+	vertices = [];
+
+	var faces_temp = [];
+	for (var i = 0; i < numberOfFaces; i++) {
+		var temp1 = faces.splice(0, 1).pop();
+		var verticesInFace = parseInt(temp1[0]);
+		var temp2 = [];
+		temp2.push(verticesInFace);
+		for (var j = 1; j <= verticesInFace; j++) {
+			var v = parseInt(temp1[j]);
+			temp2.push(v);
+		}
+		faces_temp.push(temp2);
+	}
+	faces = [];
+
+
+
+	/* End of function */
+	numberOfVertices = vertices.length;
+	numberOfFaces = faces.length;
+}
+
+/* Catmull-Clark Surface */
+function updateCatmullClark() {
+	if (numberOfFaces == 0 || numberOfVertices == 0) {
+		alert("Invalid Vertices and Faces Data!");
+	}
+
+	addToEdges();
+	rectangulation();
+
+	/* Clear vertices and faces */
+	currentVerticeIndex = -1;
+	var vertices_temp = copyAndModifyYOfArray(vertices, 0, 0);
+	vertices = [];
+
+	var faces_temp = [];
+	for (var i = 0; i < numberOfFaces; i++) {
+		var temp1 = faces.splice(0, 1).pop();
+		var verticesInFace = parseInt(temp1[0]);
+		var temp2 = [];
+		temp2.push(verticesInFace);
+		for (var j = 1; j <= verticesInFace; j++) {
+			var v = parseInt(temp1[j]);
+			temp2.push(v);
+		}
+		faces_temp.push(temp2);
+	}
+	faces = [];
+
+
+
+	/* End of function */
+	numberOfVertices = vertices.length;
+	numberOfFaces = faces.length;
+}
+
+/* Loop Surface */
+function updateLoop() {
+	if (numberOfFaces == 0 || numberOfVertices == 0) {
+		alert("Invalid Vertices and Faces Data!");
+	}
+
+	addToEdges();
+	triangulation();
+
 	/* Clear vertices and faces */
 	currentVerticeIndex = -1;
 	var vertices_temp = copyAndModifyYOfArray(vertices, 0, 0);
@@ -592,63 +668,65 @@ function updateInput() {
 
 	}
 
+	//addToEdges();
+}
 
+function addToEdges() {
 
-	/* Store edges */
-	//edges = [];
-	edge_faces = [];
-	for (var a = 0; a < numberOfVertices - 1; a++) {
-		//var temp1 = [];
-		var temp2 = [];
-		for (var b = a + 1; b < numberOfVertices; b++) {
-				//temp1.push(parseInt(b));
-				temp2.push(0);
-		}
-		//edges.push(temp1);
-		edge_faces.push(temp2);
-	}
-
-
-	for (var a = 0; a < numberOfFaces; a++) {
-		var temp = faces[a];
-		var verticesInFace = parseInt(temp.length);
-
-		for (var b = 0; b < verticesInFace; b++) {
-
-			var v1 = temp[b];
-			var v2;
-			if (b == verticesInFace - 1) {
-				v2 = temp[0];
-			} else {
-				v2 = temp[b + 1];
+		/* Store edges */
+		//edges = [];
+		edge_faces = [];
+		for (var a = 0; a < numberOfVertices - 1; a++) {
+			//var temp1 = [];
+			var temp2 = [];
+			for (var b = a + 1; b < numberOfVertices; b++) {
+					//temp1.push(parseInt(b));
+					temp2.push(0);
 			}
-
-			if (parseInt(v1) > parseInt(v2)) {
-				var vtemp = parseInt(v1);
-				v1 = parseInt(v2);
-				v2 = vtemp;
-			}
-
-			// var faceNumber = addEdges(v1, v2);
-			// if (faceNumber > edge_faces.length - 1)
-			// {
-			// 	var temp = [];
-			// 	edge_faces.push(temp);
-			// }
-			// edge_faces[faceNumber].push(parseInt(a));
-
-			var index = parseInt(parseInt(v2) - parseInt(v1) - 1);
-
-			if (edge_faces[v1][index] === 0) {
-				edge_faces[v1][index] = [];
-			}
-
-			edge_faces[v1][index].push(parseInt(a));
-
+			//edges.push(temp1);
+			edge_faces.push(temp2);
 		}
 
-	}
 
+		for (var a = 0; a < numberOfFaces; a++) {
+			var temp = faces[a];
+			var verticesInFace = parseInt(temp.length);
+
+			for (var b = 0; b < verticesInFace; b++) {
+
+				var v1 = temp[b];
+				var v2;
+				if (b == verticesInFace - 1) {
+					v2 = temp[0];
+				} else {
+					v2 = temp[b + 1];
+				}
+
+				if (parseInt(v1) > parseInt(v2)) {
+					var vtemp = parseInt(v1);
+					v1 = parseInt(v2);
+					v2 = vtemp;
+				}
+
+				// var faceNumber = addEdges(v1, v2);
+				// if (faceNumber > edge_faces.length - 1)
+				// {
+				// 	var temp = [];
+				// 	edge_faces.push(temp);
+				// }
+				// edge_faces[faceNumber].push(parseInt(a));
+
+				var index = parseInt(parseInt(v2) - parseInt(v1) - 1);
+
+				if (edge_faces[v1][index] === 0) {
+					edge_faces[v1][index] = [];
+				}
+
+				edge_faces[v1][index].push(parseInt(a));
+
+			}
+
+		}
 }
 
 // function addEdges(v1, v2) {
