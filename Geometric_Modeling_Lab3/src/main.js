@@ -66,8 +66,8 @@ var controlSurface = {
 	m: 0,
 	n: 0,
 	positions:[],
-	u: 0.05,
-	v: 0.05
+	u: 0.1,
+	v: 0.1
 };
 
 
@@ -369,7 +369,7 @@ function updateSplinePoints() {
 	controlSurface.m = controlPolygon.row - 1;
 	controlSurface.n = controlPolygon.column - 1;
 
-	
+	var temp4 = [];
 	for (var j = 1; j <= controlSurface.n - 2; j++) {
 		var temp1 = [];
 		for (var i = 1; i <= controlSurface.m - 2; i++) {
@@ -414,8 +414,13 @@ function updateSplinePoints() {
 					temp2.push(new THREE.Vector3(x, y, z));
 					v += controlSurface.v;
 				}
+				temp4.push(new THREE.Vector3(temp2[0].x, temp2[0].y, temp2[0].z));
+				if (temp4.length > 0) {
+					temp2.splice(0, 0, temp4.splice(0, 1).pop());
+				}	
 
 				if (temp1.length > 0) {
+					
 					for (var k = 0; k < temp1.length - 2; k++) {
 						var temp3 = [];
 						temp3.push(addVertices(temp1[k]));
@@ -425,8 +430,10 @@ function updateSplinePoints() {
 						faces.push(temp3);
 					}
 				}
+
 				temp1 = copyAndModifyYOfArray(temp2, 0, 0);
 
+				
 				u += controlSurface.u;
 			}
 		}
