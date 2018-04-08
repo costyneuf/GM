@@ -86,6 +86,35 @@ var mesh;
 var meshGeometry = new THREE.Geometry();
 var meshMaterial = new THREE.MeshBasicMaterial();
 
+var params = {
+
+	/* Points */
+	'Add Point': addPoint,
+	'Remove Point': removePoint,
+	'Insert Point': insertPoint,
+	'Duplicate Point': duplicatePoint,
+	'Clear': clear,
+
+	/* value */
+	'Subdivision': 4,
+
+	/* Curve */
+	'Curve': 'Bezier Curve',
+	'Curve Visible': true,
+	//'Closed': false,
+
+	/* Control Points Generator */
+	'Control Polyhedron': 'Extrusion',
+	'Control Polyhedron Visible': false,
+
+	/* Surface Type */
+	'Surface': '',
+
+	/* Import and Export */
+	'Import': importOFF,
+	'Export': exportOFF
+
+};
 
 function addFacet(v1, v2, v3) {
 
@@ -124,8 +153,9 @@ function clearMesh() {
 	meshArray = [];
 }
 
-
+/* Bezier Surface and Cubic B-Spline Surface */
 var currentVerticeIndex = -1;
+var currentEdgeIndex = -1;
 
 function addMiddlePoints() {
 
@@ -446,44 +476,47 @@ function updateSplinePoints() {
 
 }
 
-var params = {
+/* Doo-Sabin Surface */
+function updateDooSabin() {
 
-	/* Points */
-	'Add Point': addPoint,
-	'Remove Point': removePoint,
-	'Insert Point': insertPoint,
-	'Duplicate Point': duplicatePoint,
-	'Clear': clear,
+	/* Clear vertices and faces */
+	currentVerticeIndex = -1;
+	var vertices_temp = copyAndModifyYOfArray(vertices, 0, 0);
+	vertices = [];
 
-	/* value */
-	'Subdivision': 4,
+	var faces_temp = [];
+	for (var i = 0; i < numberOfFaces; i++) {
+		var temp1 = faces.splice(0, 1).pop();
+		var verticesInFace = parseInt(temp1[0]);
+		var temp2 = [];
+		temp2.push(verticesInFace);
+		for (var j = 1; j <= verticesInFace; j++) {
+			var v = parseInt(temp1[j]);
+			temp2.push(v);
+		}
+		faces_temp.push(temp2);
+	}
+	faces = [];
 
-	/* Curve */
-	'Curve': 'Bezier Curve',
-	'Curve Visible': true,
-	//'Closed': false,
 
-	/* Control Points Generator */
-	'Control Polyhedron': 'Extrusion',
-	'Control Polyhedron Visible': false,
 
-	/* Surface Type */
-	'Surface': '',
+	/* End of function */
+	numberOfVertices = vertices.length;
+	numberOfFaces = faces.length;
+}
 
-	/* Import and Export */
-	'Import': importOFF,
-	'Export': exportOFF
-
-};
-
+/* Import and Export */
 var readBuffer;
-
 
 function updateInput() {
 
 	if (typeof(readBuffer) != typeof("string")) {
 		return;
 	}
+
+	currentVerticeIndex = -1;
+	currentEdgeIndex = -1;
+
 	/* Find number of vertices and faces */
 	var i = 0;
 	while (readBuffer.charAt(i) != " " && readBuffer.charAt(i) != "\t") {
@@ -518,6 +551,7 @@ function updateInput() {
 			i++;
 		}
 		var z = parseFloat(readBuffer.substr(j, i));
+		currentVerticeIndex++;
 		vertices.push(new THREE.Vector3(x, y, z));
 	}
 
@@ -558,7 +592,81 @@ function updateInput() {
 
 	}
 
+
+
+	/* Store edges */
+	//edges = [];
+	edge_faces = [];
+	for (var a = 0; a < numberOfVertices - 1; a++) {
+		//var temp1 = [];
+		var temp2 = [];
+		for (var b = a + 1; b < numberOfVertices; b++) {
+				//temp1.push(parseInt(b));
+				temp2.push(0);
+		}
+		//edges.push(temp1);
+		edge_faces.push(temp2);
+	}
+
+
+	for (var a = 0; a < numberOfFaces; a++) {
+		var temp = faces[a];
+		var verticesInFace = parseInt(temp.length);
+
+		for (var b = 0; b < verticesInFace; b++) {
+
+			var v1 = temp[b];
+			var v2;
+			if (b == verticesInFace - 1) {
+				v2 = temp[0];
+			} else {
+				v2 = temp[b + 1];
+			}
+
+			if (parseInt(v1) > parseInt(v2)) {
+				var vtemp = parseInt(v1);
+				v1 = parseInt(v2);
+				v2 = vtemp;
+			}
+
+			// var faceNumber = addEdges(v1, v2);
+			// if (faceNumber > edge_faces.length - 1)
+			// {
+			// 	var temp = [];
+			// 	edge_faces.push(temp);
+			// }
+			// edge_faces[faceNumber].push(parseInt(a));
+
+			var index = parseInt(parseInt(v2) - parseInt(v1) - 1);
+
+			if (edge_faces[v1][index] === 0) {
+				edge_faces[v1][index] = [];
+			}
+
+			edge_faces[v1][index].push(parseInt(a));
+
+		}
+
+	}
+
 }
+
+// function addEdges(v1, v2) {
+//
+// 	for (var i = 0; i < edges.length; i++) {
+// 		if ((v1 == edges[i][0] && v2 == edges[i][1]) || (v2 == edges[i][0] && v1 == edges[i][1])) {
+// 			return i;
+// 		}
+// 	}
+//
+// 	var temp = [];
+// 	temp.push(parseInt(v1));
+// 	temp.push(parseInt(v2));
+// 	edges.push(temp);
+// 	currentEdgeIndex++;
+//
+// 	return currentEdgeIndex;
+// }
 
 function triangulation() {
 
@@ -596,7 +704,7 @@ function triangulation() {
 
 	}
 	numberOfFaces = faces.length;
-	
+
 }
 
 function handleFiles(files) {
@@ -651,6 +759,7 @@ function exportOFF() {
 	newWindow.document.close();
 }
 
+/* Lab 1 and Lab 2 */
 function copyAndModifyYOfArray(A, row_index, offset) {
 
 	var B = [];
