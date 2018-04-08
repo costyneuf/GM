@@ -563,7 +563,7 @@ function rectangulation() {
 		if (oneface.length > 4) {
 			/* Even number of vertices of each face */
 			if (oneface.length % 2 == 0) {
-				for (var i = 1; oneface.length - i != 3; i += 2) {
+				for (var i = 1; oneface.length - i >= 3; i += 2) {
 					var v1, v2, v3, v4;
 					v1 = oneface[0];
 					v2 = oneface[i];
@@ -607,7 +607,7 @@ function rectangulation() {
 		}
 		else {
 			faces.push(oneface);
-		}	
+		}
 	}
 
 	numberOfFaces = faces.length;
@@ -933,6 +933,12 @@ function update3D() {
 		updateBezierSurface();
 	} else if (params.Surface == "Cubic B-Spline Surface") {
 		updateSplinePoints();
+	} else if (params.Surface == "Doo-Sabin Surface") {
+		updateDooSabin();
+	} else if (params.Surface == "Catmull-Clark Surface") {
+		updateCatmullClark();
+	} else if (params.Surface == "Loop Surface") {
+		updateLoop();
 	}
 
 }
