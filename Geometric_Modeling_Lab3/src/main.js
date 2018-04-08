@@ -512,6 +512,9 @@ function updateDooSabin() {
 }
 
 /* Catmull-Clark Surface */
+var facePoint = [];
+var faces_temp = [];
+var vertices_temp = [];
 function updateCatmullClark() {
 	if (numberOfFaces == 0 || numberOfVertices == 0) {
 		alert("Invalid Vertices and Faces Data!");
@@ -522,24 +525,24 @@ function updateCatmullClark() {
 
 	/* Clear vertices and faces */
 	currentVerticeIndex = -1;
-	var vertices_temp = copyAndModifyYOfArray(vertices, 0, 0);
+	vertices_temp = copyAndModifyYOfArray(vertices, 0, 0);
 	vertices = [];
 
-	var faces_temp = [];
+	faces_temp = [];
 	for (var i = 0; i < numberOfFaces; i++) {
 		var temp1 = faces.splice(0, 1).pop();
-		var verticesInFace = parseInt(temp1[0]);
+		var verticesInFace = temp1.length;
 		var temp2 = [];
-		temp2.push(verticesInFace);
-		for (var j = 1; j <= verticesInFace; j++) {
+		for (var j = 0; j < verticesInFace; j++) {
 			var v = parseInt(temp1[j]);
 			temp2.push(v);
 		}
 		faces_temp.push(temp2);
 	}
 	faces = [];
+	facePoint = [];
 
-
+	computeFacePoint();
 
 	/* End of function */
 	numberOfVertices = vertices.length;
@@ -612,6 +615,36 @@ function rectangulation() {
 
 	numberOfFaces = faces.length;
 	numberOfVertices = vertices.length;
+}
+function computeFacePoint() {
+	if (faces_temp.length == 0 || vertices_temp.length == 0) {
+		alert("Fail to compute face points! Please re-import a file!");
+		vertices = [];
+		faces = [];
+		edge_faces = [];
+		currentEdgeIndex = -1;
+		currentVerticeIndex = -1;
+		return;
+	}
+
+	for (var i = 0; i < numberOfFaces; i++) {
+		var x = 0;
+		var y = 0;
+		var z = 0;
+
+		for (var j = 0; j < faces_temp[i].length; j++) {
+			x += vertices_temp[faces_temp[i][j]].x;
+			y += vertices_temp[faces_temp[i][j]].y;
+			z += vertices_temp[faces_temp[i][j]].z;
+		}
+
+		x /= faces_temp[i].length;
+		y /= faces_temp[i].length;
+		z /= faces_temp[i].length;
+
+		facePoint.push(new THREE.Vector3(x, y, z));
+
+	}
 }
 
 /* Loop Surface */
