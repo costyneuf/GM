@@ -987,32 +987,103 @@ function updateLoop() {
 	}
 
 	triangulation();
-	addToEdges();
 
-	/* Clear vertices and faces */
-	currentVerticeIndex = -1;
-	var vertices_temp = copyAndModifyYOfArray(vertices, 0, 0);
-	vertices = [];
+	for (var sub = 0; sub < subdivisions; sub++) {
+		console.log("Loop Subdivision\t" + sub);
+		addToEdges();
+		getDegree();
 
-	var faces_temp = [];
-	for (var i = 0; i < numberOfFaces; i++) {
-		var temp1 = faces.splice(0, 1).pop();
-		var verticesInFace = parseInt(temp1[0]);
-		var temp2 = [];
-		temp2.push(verticesInFace);
-		for (var j = 1; j <= verticesInFace; j++) {
-			var v = parseInt(temp1[j]);
-			temp2.push(v);
+		/* Clear vertices and faces */
+		currentVerticeIndex = numberOfVertices - 1;
+		vertices_temp = copyAndModifyYOfArray(vertices, 0, 0);
+		for (var i = 0; i < numberOfVertices; i++) {
+			vertices[i] = 0;
 		}
-		faces_temp.push(temp2);
+		var edge_save_odd = [];
+		for (var a = 0; a < numberOfVertices - 1; a++) {
+			var temp2 = [];
+			for (var b = a + 1; b < numberOfVertices; b++) {
+					temp2.push(-1);
+			}
+			edge_save_odd.push(temp2);
+		}
+		faces_temp = [];
+		facePoint = [];
+		edgePoint = [];
+		for (var i = 0; i < numberOfFaces; i++) {
+			var temp1 = faces.splice(0, 1).pop();
+			var verticesInFace = temp1.length;
+			var temp2 = [];
+			for (var j = 0; j < verticesInFace; j++) {
+				var v = parseInt(temp1[j]);
+				temp2.push(v);
+			}
+			faces_temp.push(temp2);
+		}
+		faces = [];
+
+		for (var i = 0; i < numberOfFaces; i++) {
+
+			var r, s, p, q;
+			var x, y, z;
+			var odd_v = [];
+			var even_v = [];
+
+			for (var j = 0; j < 3; j++) {
+				r = faces_temp[i][j % 3];
+				s = faces_temp[i][(j + 1) % 3];
+				p = faces_temp[i][(j + 2) % 3];
+
+				var indexi = r > s ? s : r;
+				var indexj = r > s ? r - s - 1 : s - r - 1;
+				var indexQ = edge_faces[indexi][indexj][0] == i ?
+					edge_faces[indexi][indexj][1] : edge_faces[indexi][indexj][0];
+
+				/* Calculate odd_v */
+				if (edge_save_odd[indexi][indexj] < 0) {
+					for (var k = 0; k < 3; k++) {
+						if (faces_temp[indexQ][k] != r && faces_temp[indexQ][k] != s) {
+							q = faces_temp[indexQ][k];
+							k = 3;
+						}
+					}
+
+					x = vertices_temp[p].x / 8 + 3 * vertices_temp[r].x / 8 + 3 * vertices_temp[s].x / 8 + vertices_temp[q].x / 8;
+					y = vertices_temp[p].y / 8 + 3 * vertices_temp[r].y / 8 + 3 * vertices_temp[s].y / 8 + vertices_temp[q].y / 8;
+					z = vertices_temp[p].z / 8 + 3 * vertices_temp[r].z / 8 + 3 * vertices_temp[s].z / 8 + vertices_temp[q].z / 8;
+					vertices.push(new THREE.Vector3(x, y, z));
+					currentVerticeIndex++;
+					edge_save_odd[indexi][indexj] = currentVerticeIndex;
+				}
+				odd_v.push(parseInt(edge_save_odd[indexi][indexj]));
+
+				/* Calculate even_v */
+				var v = vertices_temp[r];
+				x = 5 / 8 * v.x;
+				y = 5 / 8 * v.y;
+				z = 5 / 8 * v.z;
+				for (var k = 0; k < degree_edge[r].length; k++) {
+					var index = degree_edge[r][k];
+					x += 3 / 8 / degree_edge[r].length * vertices_temp[index].x;
+					y += 3 / 8 / degree_edge[r].length * vertices_temp[index].y;
+					z += 3 / 8 / degree_edge[r].length * vertices_temp[index].z;
+				}
+
+				vertices[r] = new THREE.Vector3(x, y, z);
+				even_v.push(parseInt(r));
+			}
+
+			faces.push([even_v[0], odd_v[0], odd_v[2]]);
+			faces.push([even_v[2], odd_v[1], odd_v[2]]);
+			faces.push([even_v[1], odd_v[0], odd_v[1]]);
+			faces.push([odd_v[1], odd_v[0], odd_v[2]]);
+		}
+
+		/* End of function */
+		numberOfVertices = vertices.length;
+		numberOfFaces = faces.length;
 	}
-	faces = [];
 
-
-
-	/* End of function */
-	numberOfVertices = vertices.length;
-	numberOfFaces = faces.length;
 }
 function triangulation() {
 
@@ -1159,9 +1230,10 @@ function addToEdges() {
 		}
 
 
-		for (var a = 0; a < numberOfFaces; a++) {
+		for (var a = 0; a < numberOfFaces; a++)
+		{
 			var temp = faces[a];
-			var verticesInFace = parseInt(temp.length);
+			var verticesInFace = parseInt(faces[a].length);
 
 			for (var b = 0; b < verticesInFace; b++) {
 
@@ -1189,7 +1261,7 @@ function addToEdges() {
 
 				var index = parseInt(parseInt(v2) - parseInt(v1) - 1);
 
-				if (edge_faces[v1][index] === 0) {
+				if (typeof(edge_faces[v1][index]) == typeof(0)) {
 					edge_faces[v1][index] = [];
 				}
 
@@ -1479,7 +1551,7 @@ function init() {
 		update3D();
 	});
 
-	gui.add( params, 'Subdivision', 2, 20).step(1).onChange(function(value){
+	gui.add( params, 'Subdivision', 1, 6).step(1).onChange(function(value){
 		subdivisions = value;
 		update3D();
 	});
