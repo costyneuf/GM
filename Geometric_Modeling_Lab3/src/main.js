@@ -321,8 +321,13 @@ function updateBezierSurface() {
 	addMiddlePoints();
 	console.log(controlSurface.positions.length + "  " + controlSurface.positions[0].length);
 
+	var temp_col1 = [];
+	var temp_col2 = [];
+	var temp_col3 = [];
 	for (var j = 3; j < controlSurface.n; j += 3) {
 		var temp1 = [];
+		temp_col1 = [];
+		temp_col2 = [];
 		for (var i = 3; i < controlSurface.m; i += 3) {
 
 			var P = [[controlSurface.positions[i - 3][j - 3], controlSurface.positions[i - 3][j - 2],
@@ -337,11 +342,12 @@ function updateBezierSurface() {
 			var u = 0;
 			var v = 0;
 
+
 			while (u <= 1) {
+
 				var temp2 = [];
 				v = 0;
 				while (v <= 1) {
-
 					temp2.push(calculateBezierSurfaceP(u,v,P));
 					v += controlSurface.v;
 				}
@@ -349,18 +355,55 @@ function updateBezierSurface() {
 				if (temp1.length > 0) {
 					for (var k = 0; k < temp1.length - 2; k++) {
 						var temp3 = [];
-						temp3.push(addVertices(temp1[k]));
-						temp3.push(addVertices(temp1[k + 1]));
-						temp3.push(addVertices(temp2[k + 1]));
-						temp3.push(addVertices(temp2[k]));
+						var p1 = addVertices(temp1[k]);
+						var p2 = addVertices(temp1[k + 1]);
+						var p3 = addVertices(temp2[k + 1]);
+						var p4 = addVertices(temp2[k]);
+						temp3.push(p1);
+						temp3.push(p2);
+						temp3.push(p3);
+						temp3.push(p4);
 						faces.push(temp3);
 						//addFacet4(vertices[temp3[0]], vertices[temp3[1]], vertices[temp3[2]], vertices[temp3[3]]);
+
+						if (k == temp1.length - 3) {
+							if (temp_col2.length == 0) {
+								temp_col2.push(parseInt(p2));
+							}
+							temp_col2.push(parseInt(p3));
+						}
+
+						if (j > 3 && k == 0) {
+							if (temp_col1.length == 0) {
+								temp_col1.push(parseInt(p1));
+							}
+							temp_col1.push(parseInt(p4));
+						}
 					}
 				}
 				temp1 = copyAndModifyYOfArray(temp2, 0, 0);
 				u += controlSurface.u;
 			}
 		}
+
+		if (j > 3) {
+			for (var k = 0; k < temp_col1.length - 1; k++) {
+				var temp3 = [];
+				console.log(temp_col1.length + "\t" + temp_col2.length);
+				temp3.push(temp_col1[k]);
+				temp3.push(temp_col1[k + 1]);
+				temp3.push(temp_col3[k + 1]);
+				temp3.push(temp_col3[k]);
+				faces.push(temp3);
+				//addFacet4(vertices[temp3[0]], vertices[temp3[1]], vertices[temp3[2]], vertices[temp3[3]]);
+			}
+		}
+
+		temp_col3 = [];
+		for (var k = 0; k < temp_col2.length; k++) {
+			temp_col3.push(parseInt(temp_col2[k]));
+		}
+
 	}
 
 	numberOfVertices = vertices.length;
@@ -417,8 +460,13 @@ function updateSplinePoints() {
 	controlSurface.n = controlPolygon.column - 1;
 
 	var temp4 = [];
+	var temp_col1 = [];
+	var temp_col2 = [];
+	var temp_col3 = [];
 	for (var j = 1; j <= controlSurface.n - 2; j++) {
 		var temp1 = [];
+		temp_col1 = [];
+		temp_col2 = [];
 		for (var i = 1; i <= controlSurface.m - 2; i++) {
 
 			var P = [];
@@ -470,19 +518,52 @@ function updateSplinePoints() {
 
 					for (var k = 0; k < temp1.length - 2; k++) {
 						var temp3 = [];
-						temp3.push(addVertices(temp1[k]));
-						temp3.push(addVertices(temp1[k + 1]));
-						temp3.push(addVertices(temp2[k + 1]));
-						temp3.push(addVertices(temp2[k]));
+						var p1 = addVertices(temp1[k]);
+						var p2 = addVertices(temp1[k + 1]);
+						var p3 = addVertices(temp2[k + 1]);
+						var p4 = addVertices(temp2[k]);
+						temp3.push(p1);
+						temp3.push(p2);
+						temp3.push(p3);
+						temp3.push(p4);
 						faces.push(temp3);
+
+						if (k == temp1.length - 3) {
+							if (temp_col2.length == 0) {
+								temp_col2.push(parseInt(p2));
+							}
+							temp_col2.push(parseInt(p3));
+						}
+
+						if (j > 1 && k == 0) {
+							if (temp_col1.length == 0) {
+								temp_col1.push(parseInt(p1));
+							}
+							temp_col1.push(parseInt(p4));
+						}
 					}
 				}
 
 				temp1 = copyAndModifyYOfArray(temp2, 0, 0);
-
-
 				u += controlSurface.u;
 			}
+		}
+		if (j > 1) {
+			for (var k = 0; k < temp_col1.length - 1; k++) {
+				var temp3 = [];
+				console.log(temp_col1.length + "\t" + temp_col2.length);
+				temp3.push(temp_col1[k]);
+				temp3.push(temp_col1[k + 1]);
+				temp3.push(temp_col3[k + 1]);
+				temp3.push(temp_col3[k]);
+				faces.push(temp3);
+				//addFacet4(vertices[temp3[0]], vertices[temp3[1]], vertices[temp3[2]], vertices[temp3[3]]);
+			}
+		}
+
+		temp_col3 = [];
+		for (var k = 0; k < temp_col2.length; k++) {
+			temp_col3.push(parseInt(temp_col2[k]));
 		}
 	}
 
