@@ -45,7 +45,7 @@ var curveGeometry;
 var curve;
 
 /* Surface */
-const EXTRUSION_TIME = 8;
+const EXTRUSION_TIME = 12;
 const OFFSET = 150;
 var controlPolygon = {
 	row: 0,
@@ -66,8 +66,8 @@ var controlSurface = {
 	m: 0,
 	n: 0,
 	positions:[],
-	u: 0.05,
-	v: 0.05
+	u: 0.1,
+	v: 0.1
 };
 
 
@@ -108,6 +108,8 @@ var params = {
 
 	/* value */
 	'Subdivision': 4,
+	'u': 0.1,
+	'v': 0.1,
 
 	/* Curve */
 	'Curve': 'Bezier Curve',
@@ -1664,6 +1666,14 @@ function init() {
 		update3D();
 	});
 	gui.add(params, 'Control Polyhedron Visible').onChange(function(){
+		update3D();
+	});
+	gui.add(params, 'u', 0.05, 0.5).step(0.05).onChange(function(value){
+		controlSurface.u = value;
+		update3D();
+	});
+	gui.add(params, 'v', 0.05, 0.5).step(0.05).onChange(function(value){
+		controlSurface.v = value;
 		update3D();
 	});
 	gui.add(params, 'Surface', ['Extrusion', 'Bezier Surface', 'Cubic B-Spline Surface',
