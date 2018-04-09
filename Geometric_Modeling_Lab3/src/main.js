@@ -557,6 +557,7 @@ var facePoint = [];
 var edgePoint = [];
 var faces_temp = [];
 var vertices_temp = [];
+var edgeLib = [];
 /* Doo-Sabin Surface */
 function updateDooSabin() {
 
@@ -565,109 +566,135 @@ function updateDooSabin() {
 		return;
 	}
 
-	addToEdges();
-	getDegree();
+	for (var sub = 0; sub < 1; sub++) {
+		console.log("Doo-Sabin Subdivision\t" + sub);
+		addToEdges();
+		getDegree();
 
-	/* Clear vertices and faces */
-	currentVerticeIndex = numberOfVertices - 1;
-	vertices_temp = copyAndModifyYOfArray(vertices, 0, 0);
-	vertices = [];
-	var vLib = []; 		/* vLib[i] := start index of v[i] in vertices */
-	for (var i = 0; i < numberOfVertices; i++) {
-		vLib.push(parseInt(vertices.length));
-		for (var j = 0; j < degree_face[i].length; j++) {
-					vertices.push(0);
-		}
-	}
-	var edgeLib = [];
-	for (var i = 0; i < numberOfVertices - 1; i++) {
-		var temp = [];
-		for (var j = i + 1; j < numberOfVertices; j++) {
-			if (typeof(edge_faces[i][j - i - 1]) != typeof(0)) {
-				temp.push([0, 0, 0, 0]);
-			} else {
-				temp.push(0);
+		/* Clear vertices and faces */
+		currentVerticeIndex = numberOfVertices - 1;
+		vertices_temp = copyAndModifyYOfArray(vertices, 0, 0);
+		vertices = [];
+		var vLib = []; 		/* vLib[i] := start index of v[i] in vertices */
+		for (var i = 0; i < numberOfVertices; i++) {
+			vLib.push(parseInt(vertices.length));
+			for (var j = 0; j < degree_face[i].length; j++) {
+						vertices.push(0);
 			}
 		}
-		edgeLib.push(temp);
-	}
-	faces_temp = [];
-	facePoint = [];
-	edgePoint = [];
-	for (var i = 0; i < numberOfFaces; i++) {
-		var temp1 = faces.splice(0, 1).pop();
-		var verticesInFace = temp1.length;
-		var temp2 = [];
-		for (var j = 0; j < verticesInFace; j++) {
-			var v = parseInt(temp1[j]);
-			temp2.push(v);
-		}
-		faces_temp.push(temp2);
-	}
-	faces = [];
-
-	computeFacePoint();
-
-	/* Calculate new points */
-	for (var i = 0; i < numberOfFaces; i++) {
-
-		var oneface = faces_temp[i];
-		var temp = [];
-		var x = facePoint[i];
-		for (var j = 0; j < oneface.length; j++) {
-
-			var vp = faces_temp[i][j];
-			var wp = j < oneface.length - 1 ? faces_temp[i][j + 1] : faces_temp[i][0];
-			var indexi = vp < wp ? vp : wp;
-			var indexj = vp < wp ? wp - vp - 1 : vp - wp - 1;
-
-			var newVp = parseInt(vLib[vp] + degree_face[vp].indexOf(i));
-			var v = vertices_temp[vp];
-
-			/* Calculate middle points */
-			var v1, v2, ve1, ve2, a, b, c;
-			if (j == 0) {
-				v1 = vertices_temp[faces_temp[i][oneface.length - 1]];
-			} else {
-				v1 = vertices_temp[faces_temp[i][j - 1]];
+		edgeLib = [];
+		for (var i = 0; i < numberOfVertices - 1; i++) {
+			var temp = [];
+			for (var j = i + 1; j < numberOfVertices; j++) {
+				if (typeof(edge_faces[i][j - i - 1]) != typeof(0)) {
+					temp.push([-1, -1, -1, -1]);
+				} else {
+					temp.push([-2]);
+				}
 			}
-			if (j == oneface.length - 1) {
-				v2 = vertices_temp[faces_temp[i][0]];
-			} else {
-				v2 = vertices_temp[faces_temp[i][j + 1]];
+			edgeLib.push(temp);
+		}
+		faces_temp = [];
+		facePoint = [];
+		edgePoint = [];
+		for (var i = 0; i < numberOfFaces; i++) {
+			var temp1 = faces.splice(0, 1).pop();
+			var verticesInFace = temp1.length;
+			var temp2 = [];
+			for (var j = 0; j < verticesInFace; j++) {
+				var v = parseInt(temp1[j]);
+				temp2.push(v);
 			}
-			a = (v.x + v1.x) / 2;
-			b = (v.y + v1.y) / 2;
-			c = (v.z + v1.z) / 2;
-			ve1 = new THREE.Vector3(a, b, c);
-			a = (v.x + v2.x) / 2;
-			b = (v.y + v2.y) / 2;
-			c = (v.z + v2.z) / 2;
-			ve2 = new THREE.Vector3(a, b, c);
-
-			/* Add result into vertices and faces */
-			a = (x.x + ve1.x + ve2.x + v.x) / 4;
-			b = (x.y + ve1.y + ve2.y + v.y) / 4;
-			c = (x.z + ve1.z + ve2.z + v.z) / 4;
-			vertices[newVp] = new THREE.Vector3(a, b, c);
-			temp.push(newVp);
+			faces_temp.push(temp2);
 		}
-		faces.push(temp);
-	}
+		faces = [];
 
-	/* Add points split faces */
-	for (var i = 0; i < numberOfVertices; i++) {
-		var temp = [];
-		for (var j = vLib[i]; j < vLib[i] + degree_face[i].length; j++) {
-			temp.push(j);
+		computeFacePoint();
+
+		/* Calculate new points */
+		for (var i = 0; i < numberOfFaces; i++) {
+
+			var oneface = faces_temp[i];
+			var temp = [];
+			var x = facePoint[i];
+			for (var j = 0; j < oneface.length; j++) {
+
+				var vp = faces_temp[i][j];
+				var wp = j < oneface.length - 1 ? faces_temp[i][j + 1] : faces_temp[i][0];
+				var indexi = vp < wp ? vp : wp;
+				var indexj = vp < wp ? wp - vp - 1 : vp - wp - 1;
+
+				var newVp = parseInt(vLib[vp] + degree_face[vp].indexOf(i));
+				var newWp = parseInt(vLib[wp] + degree_face[wp].indexOf(i));
+				var v = vertices_temp[vp];
+
+				/* Calculate middle points */
+				var v1, v2, ve1, ve2, a, b, c;
+				if (j == 0) {
+					v1 = vertices_temp[faces_temp[i][oneface.length - 1]];
+				} else {
+					v1 = vertices_temp[faces_temp[i][j - 1]];
+				}
+				if (j == oneface.length - 1) {
+					v2 = vertices_temp[faces_temp[i][0]];
+				} else {
+					v2 = vertices_temp[faces_temp[i][j + 1]];
+				}
+				a = (v.x + v1.x) / 2;
+				b = (v.y + v1.y) / 2;
+				c = (v.z + v1.z) / 2;
+				ve1 = new THREE.Vector3(a, b, c);
+				a = (v.x + v2.x) / 2;
+				b = (v.y + v2.y) / 2;
+				c = (v.z + v2.z) / 2;
+				ve2 = new THREE.Vector3(a, b, c);
+
+				/* Add result into vertices and faces */
+				a = (x.x + ve1.x + ve2.x + v.x) / 4;
+				b = (x.y + ve1.y + ve2.y + v.y) / 4;
+				c = (x.z + ve1.z + ve2.z + v.z) / 4;
+				vertices[newVp] = new THREE.Vector3(a, b, c);
+				temp.push(newVp);
+
+
+				if (edgeLib[indexi][indexj].indexOf(-1) >= 0) {
+					edgeLib[indexi][indexj].splice(0, 2);
+					edgeLib[indexi][indexj].push(parseInt(newVp));
+					edgeLib[indexi][indexj].push(parseInt(newWp));
+				}
+
+			}
+			faces.push(temp);
 		}
-		faces.push(temp);
+
+		/* Add points split faces */
+		for (var i = 0; i < numberOfVertices; i++) {
+			var temp = [];
+			temp.push(vLib[i] + degree_face[i].length - 1);
+			for (var j = vLib[i]; j < vLib[i] + degree_face[i].length - 1; j++) {
+				temp.push(j);
+			}
+			faces.push(temp);
+		}
+
+		/* Add edges split faces */
+		for (var i = 0; i < numberOfVertices - 1; i++) {
+			for (var j = 0; j + i < numberOfVertices - 1; j++) {
+				if (edgeLib[i][j].indexOf(-2) < 0) {
+					var temp = edgeLib[i][j];
+					if (temp[0] == -1 || temp[1] == -1 || temp[2] == -1 || temp[3] == -1)
+					{
+						console.log(i + "\t" + j);
+					}
+					faces.push([temp[0], temp[1], temp[2], temp[3]]);
+				}
+			}
+		}
+
+		/* End of function */
+		numberOfVertices = vertices.length;
+		numberOfFaces = faces.length;
 	}
-
-
-	/* End of function */
-	numberOfVertices = vertices.length;
-	numberOfFaces = faces.length;
 }
 
 /* Catmull-Clark Surface */
