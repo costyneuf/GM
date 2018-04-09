@@ -85,7 +85,7 @@ var edge_faces;
  */
 var degree_edge;
 /*
- * degree_edge[i] := [Fp, Fq, Fr, Fs, ...]
+ * degree_face[i] := [Fp, Fq, Fr, Fs, ...]
  * vertice(i) adjacent to faces Fp, Fq, Fr, Fs, ...
  */
 var degree_face;
@@ -591,7 +591,6 @@ function updateDooSabin() {
 /* Catmull-Clark Surface */
 var facePoint = [];
 var edgePoint = [];
-// var vertexPoint = [];
 var faces_temp = [];
 var vertices_temp = [];
 function updateCatmullClark() {
@@ -657,7 +656,67 @@ function updateCatmullClark() {
 		}
 
 		/* Calculate vV0, vV1, vV2, vV3 */
+		/* v' = Q/n + 2R/n + (n-3)v/n */
 		var vV = [];
+		for (var j = 0; j < faces_temp[i].length; j++) {
+			var vp = faces_temp[i][j];
+			var v = vertices_temp[vp];
+			var adjacentFaces = degree_face[vp];
+			var incidentEdges = degree_edge[vp];
+
+			/* Original point */
+			x = (faces_temp[i].length - 3) / faces_temp[i].length * v.x;
+			y = (faces_temp[i].length - 3) / faces_temp[i].length * v.y;
+			z = (faces_temp[i].length - 3) / faces_temp[i].length * v.z;
+
+			/* Average of face points */
+			for (var k = 0; k < adjacentFaces.length; k++) {
+					var fp = adjacentFaces[k];
+					x += (facePoint[fp].x) / faces_temp[i].length;
+					y += (facePoint[fp].y) / faces_temp[i].length;
+					z += (facePoint[fp].z) / faces_temp[i].length;
+			}
+
+			/* Average of midpoints */
+			for (var k = 0; k < incidentEdges.length; k++) {
+				var wp = incidentEdges[k];
+				var indexi = wp > vp ? vp : wp;
+				var indexj = wp > vp ? wp - vp - 1 : vp - wp - 1;
+				x += 2 * (edgePoint[indexi][indexj].x) / faces_temp[i].length;
+				y += 2 * (edgePoint[indexi][indexj].y) / faces_temp[i].length;
+				z += 2 * (edgePoint[indexi][indexj].z) / faces_temp[i].length;
+			}
+
+			vV.push(new THREE.Vector3(x, y, z));
+		}
+
+		var temp = [];
+		temp.push(addVertices(vV[0]));
+		temp.push(addVertices(vE[0]));
+		temp.push(addVertices(vF));
+		temp.push(addVertices(vE[3]));
+		faces.push(temp);
+
+		temp = [];
+		temp.push(addVertices(vE[0]));
+		temp.push(addVertices(vF));
+		temp.push(addVertices(vE[1]));
+		temp.push(addVertices(vV[1]));
+		faces.push(temp);
+
+		temp = [];
+		temp.push(addVertices(vE[1]));
+		temp.push(addVertices(vF));
+		temp.push(addVertices(vE[2]));
+		temp.push(addVertices(vV[2]));
+		faces.push(temp);
+
+		temp = [];
+		temp.push(addVertices(vE[3]));
+		temp.push(addVertices(vF));
+		temp.push(addVertices(vE[2]));
+		temp.push(addVertices(vV[3]));
+		faces.push(temp);
 
 	}
 
@@ -781,22 +840,28 @@ function computeEdgePoint() {
 		/* Ve = (v + w + vF1 + vF2) / 4 */
 
 		var temp = [];
-		var v = vertices[i];
+		var v = vertices_temp[i];
 		for (var j = 0; j < edge_faces[i].length; j++) {
 
 			if (edge_faces[i][j] != 0) {
 
-				var w = vertices[i + j + 1];
+				var w = vertices_temp[i + j + 1];
 				var vF1p = edge_faces[i][j][0];
-				var vF2p = edge_faces[i][j][1];
+				var vF2 = new THREE.Vector3(0, 0, 0);
+				if (edge_faces[i][j].length > 1) {
+					var vF2p = edge_faces[i][j][1];
+					vF2 = facePoint[vF2p];
+				}
+
 				var vF1 = facePoint[vF1p];
-				var vF2 = facePoint[vF2p];
 
 				var x = (v.x + w.x + vF1p.x + vF2p.x) / 4;
 				var y = (v.y + w.y + vF1p.y + vF2p.y) / 4;
 				var z = (v.z + w.z + vF1p.z + vF2p.z) / 4;
 
 				temp.push(new THREE.Vector3(x, y, z));
+			} else {
+				temp.push(new THREE.Vector3(0, 0, 0));
 			}
 
 		}
@@ -804,9 +869,7 @@ function computeEdgePoint() {
 	}
 
 }
-function computeVertexPoint() {
-	
-}
+
 
 /* Loop Surface */
 function updateLoop() {
