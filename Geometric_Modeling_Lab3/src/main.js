@@ -77,7 +77,18 @@ var numberOfFaces;
 var vertices;
 var faces;
 var edges;
+/* edge_faces[i][j]: edge(v[i], v[i + j + 1]) has adjacent faces [F1, F2] or 0 */
 var edge_faces;
+/*
+ * degree_edge[i] := [vp, vq, vr, vs, ...]
+ * vertice(i) incident with edge vivp, vivq, vivr, vivs, ...
+ */
+var degree_edge;
+/*
+ * degree_edge[i] := [Fp, Fq, Fr, Fs, ...]
+ * vertice(i) adjacent to faces Fp, Fq, Fr, Fs, ...
+ */
+var degree_face;
 
 /* Mesh */
 var meshArray = [];
@@ -362,6 +373,8 @@ function addVertices(v) {
 			return vertices.indexOf(element);
 		}
 	});
+
+
 	vertices.push(v);
 	currentVerticeIndex++;
 	return currentVerticeIndex;
@@ -476,11 +489,75 @@ function updateSplinePoints() {
 
 }
 
+/* Calculate degree_edge and degree_face */
+function getDegree() {
+
+	degree_edge = [];
+	degree_face = [];
+
+	/* Check whether the data is correct stored */
+	if (numberOfVertices == 0 || numberOfFaces == 0 ||
+			numberOfFaces != faces.length || numberOfVertices != vertices.length) {
+				alert("Fail to process getDegree()! Clear data!");
+				vertices = [];
+				faces = [];
+				edge_faces = [];
+				currentEdgeIndex = -1;
+				currentVerticeIndex = -1;
+				return;
+			}
+
+	for (var i = 0; i < numberOfVertices; i++) {
+		degree_edge.push(0);
+		degree_face.push(0);
+	}
+
+	for (var i = 0; i < numberOfFaces; i++) {
+
+		var oneface = faces[i];
+		for (var j = 0; j < oneface.length; j++) {
+
+					var v1 = faces[i][j];
+					var v2;
+					if (j == oneface.length - 1) {
+						v2 = faces[i][0];
+					} else {
+						v2 = faces[i][j + 1];
+					}
+
+					/* Add to degree_edge */
+					if (degree_edge[v1] == 0) {
+						degree_edge[v1] = [parseInt(v2)];
+					} else {
+						degree_edge[v1].push(parseInt(v2));
+					}
+
+					if (degree_edge[v2] == 0) {
+						degree_edge[v2] = [parseInt(v1)];
+					} else {
+						degree_edge[v2].push(parseInt(v1));
+					}
+
+					/* Add to degree_face */
+					if (degree_face[v1] == 0) {
+						degree_face[v1] = [parseInt(i)];
+					} else {
+						degree_face[v1].push(parseInt(i));
+					}
+
+		}
+
+	}
+
+}
+
+
 /* Doo-Sabin Surface */
 function updateDooSabin() {
 
 	if (numberOfFaces == 0 || numberOfVertices == 0) {
 		alert("Invalid Vertices and Faces Data!");
+		return;
 	}
 
 	addToEdges();
@@ -513,15 +590,19 @@ function updateDooSabin() {
 
 /* Catmull-Clark Surface */
 var facePoint = [];
+var edgePoint = [];
+// var vertexPoint = [];
 var faces_temp = [];
 var vertices_temp = [];
 function updateCatmullClark() {
 	if (numberOfFaces == 0 || numberOfVertices == 0) {
 		alert("Invalid Vertices and Faces Data!");
+		return;
 	}
 
 	rectangulation();
 	addToEdges();
+	getDegree();
 
 	/* Clear vertices and faces */
 	currentVerticeIndex = -1;
@@ -540,9 +621,45 @@ function updateCatmullClark() {
 		faces_temp.push(temp2);
 	}
 	faces = [];
-	facePoint = [];
 
+	/* Compute face points, edge points, and new vertex points */
 	computeFacePoint();
+	computeEdgePoint();
+
+	for (var i = 0; i < numberOfFaces; i++) {
+
+		var x, y, z;
+		/* Calculate vF */
+		var vF = facePoint[i];
+		vF = new THREE.Vector3(vF.x, vF.y, vF.z);
+
+		/* Calculate vE0, vE1, vE2, vE3 */
+		var vE = [];
+		for (var j = 0; j < faces_temp[i].length; j++) {
+
+			var vp = faces_temp[i][j];
+			var wp;
+			if (j < faces_temp[i].length - 1) {
+				wp = faces_temp[i][j + 1];
+			} else {
+				wp = faces_temp[i][0];
+			}
+
+			if (vp > wp) {
+				var temp = vp;
+				vp = parseInt(wp);
+				wp = parseInt(temp);
+			}
+			var index = wp - vp - 1;
+			var vEi = edgePoint[vp][index];
+
+			vE.push(new THREE.Vector3(vEi.x, vEi.y, vEi.z));
+		}
+
+		/* Calculate vV0, vV1, vV2, vV3 */
+		var vV = [];
+
+	}
 
 	/* End of function */
 	numberOfVertices = vertices.length;
@@ -627,6 +744,7 @@ function computeFacePoint() {
 		return;
 	}
 
+	facePoint = [];
 	for (var i = 0; i < numberOfFaces; i++) {
 		var x = 0;
 		var y = 0;
@@ -646,11 +764,55 @@ function computeFacePoint() {
 
 	}
 }
+function computeEdgePoint() {
+	if (faces_temp.length == 0 || vertices_temp.length == 0) {
+		alert("Fail to compute face points! Please re-import a file!");
+		vertices = [];
+		faces = [];
+		edge_faces = [];
+		currentEdgeIndex = -1;
+		currentVerticeIndex = -1;
+		return;
+	}
+
+	edgePoint = [];
+	for (var i = 0; i < edge_faces.length; i++) {
+
+		/* Ve = (v + w + vF1 + vF2) / 4 */
+
+		var temp = [];
+		var v = vertices[i];
+		for (var j = 0; j < edge_faces[i].length; j++) {
+
+			if (edge_faces[i][j] != 0) {
+
+				var w = vertices[i + j + 1];
+				var vF1p = edge_faces[i][j][0];
+				var vF2p = edge_faces[i][j][1];
+				var vF1 = facePoint[vF1p];
+				var vF2 = facePoint[vF2p];
+
+				var x = (v.x + w.x + vF1p.x + vF2p.x) / 4;
+				var y = (v.y + w.y + vF1p.y + vF2p.y) / 4;
+				var z = (v.z + w.z + vF1p.z + vF2p.z) / 4;
+
+				temp.push(new THREE.Vector3(x, y, z));
+			}
+
+		}
+		edgePoint.push(temp);
+	}
+
+}
+function computeVertexPoint() {
+	
+}
 
 /* Loop Surface */
 function updateLoop() {
 	if (numberOfFaces == 0 || numberOfVertices == 0) {
 		alert("Invalid Vertices and Faces Data!");
+		return;
 	}
 
 	triangulation();
