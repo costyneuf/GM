@@ -566,7 +566,7 @@ function updateDooSabin() {
 		return;
 	}
 
-	for (var sub = 0; sub < 1; sub++) {
+	for (var sub = 0; sub < subdivisions; sub++) {
 		console.log("Doo-Sabin Subdivision\t" + sub);
 		addToEdges();
 		getDegree();
@@ -659,8 +659,14 @@ function updateDooSabin() {
 
 				if (edgeLib[indexi][indexj].indexOf(-1) >= 0) {
 					edgeLib[indexi][indexj].splice(0, 2);
-					edgeLib[indexi][indexj].push(parseInt(newVp));
-					edgeLib[indexi][indexj].push(parseInt(newWp));
+					if (vp < wp) {
+						edgeLib[indexi][indexj].push(parseInt(newVp));
+						edgeLib[indexi][indexj].push(parseInt(newWp));
+					} else {
+						edgeLib[indexi][indexj].push(parseInt(newWp));
+						edgeLib[indexi][indexj].push(parseInt(newVp));
+					}
+
 				}
 
 			}
@@ -670,8 +676,11 @@ function updateDooSabin() {
 		/* Add points split faces */
 		for (var i = 0; i < numberOfVertices; i++) {
 			var temp = [];
-			temp.push(vLib[i] + degree_face[i].length - 1);
-			for (var j = vLib[i]; j < vLib[i] + degree_face[i].length - 1; j++) {
+
+			for (var j = vLib[i]; j < vLib[i] + degree_face[i].length; j+=2) {
+				temp.push(j);
+			}
+			for (var j = vLib[i] + 1; j < vLib[i] + degree_face[i].length; j+=2) {
 				temp.push(j);
 			}
 			faces.push(temp);
@@ -686,7 +695,7 @@ function updateDooSabin() {
 					{
 						console.log(i + "\t" + j);
 					}
-					faces.push([temp[0], temp[1], temp[2], temp[3]]);
+					faces.push([temp[0], temp[1], temp[3], temp[2]]);
 				}
 			}
 		}

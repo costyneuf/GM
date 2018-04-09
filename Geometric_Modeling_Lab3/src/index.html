@@ -2,36 +2,35 @@
 <html>
 	<head>
 		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, 
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0,
 		maximum-scale=1.0">
 		<title>CSE 5543 Lab 3 Demo</title>
-		
+
 		<script type="text/javascript" src="../threeJS/three.js"></script>
 		<script src="../threeJS/controls/DragControls.js"></script>
 		<script src="../threeJS/controls/OrbitControls.js"></script>
 		<script src="../threeJS/controls/TransformControls.js"></script>
 		<script src="../threeJS/libs/stats.min.js"></script>
 		<script src="../threeJS/libs/dat.gui.min.js"></script>
-	
+
 		<script type="text/javascript" src="main.js"></script>
-	
+
 		<link rel = "stylesheet" type = "text/css" href ="style.css"/>
-	
+
 	</head>
 	<body>
 		<h1>CSE 5543 Lab 3 Demo</h1>
 		<p>This program allows users to input a Bezier Curve through canvas.
 			The Bezier Curve will be used to generate a control polyhedron via extrusion.
-			Users can choose to generate a Bezier Surface or a Cubic B-Spline Surface with it. 
-			Users can input a mesh file to generate Doo-Sabin Surface, Catmull-Clark Surface, 
+			Users can choose to generate a Bezier Surface or a Cubic B-Spline Surface with it.
+			Users can input a mesh file to generate Doo-Sabin Surface, Catmull-Clark Surface,
 			or Loop Surface.</p>
-		<p><br>Current bugs: <br>(a) cannot drag control points in control polyhedrons 
-			<br>(b) gap between patches</p>	
-		<p><br>To-Do List: <br>(a) Doo-Sabin Subdivision 
-			<br>(b) Catmull-Clark Subdivision
-			<br>(c) Loop Subdivision
-			<br>(d) Lab 1 Migration
-			<br>(e) Lab 2 Migration</p>	
+		<p><br>Current Limitations: <br>(a) cannot drag control points in control polyhedrons
+			<br>(b) gap between patches
+		  <br>(c) max subdivisions <= 4</p>
+		<p><br>To-Do List:
+			<br>(a) Lab 1 Migration
+			<br>(b) Lab 2 Migration</p>
 		<input id="myInput" type="file" style="visibility:hidden" onchange="handleFiles(this.files)" />
 	</body>
 </html>
