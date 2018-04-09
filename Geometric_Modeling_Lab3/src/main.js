@@ -66,8 +66,8 @@ var controlSurface = {
 	m: 0,
 	n: 0,
 	positions:[],
-	u: 0.1,
-	v: 0.1
+	u: 0.05,
+	v: 0.05
 };
 
 
