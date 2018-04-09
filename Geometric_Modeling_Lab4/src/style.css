@@ -1,0 +1,72 @@
+h1 {
+	text-align: center;
+	font-family: verdana;
+	font-size: 40px;
+
+}
+
+p {
+	font-size: 24px;
+  font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+}
+
+body {
+	padding: 20px;
+}
+
+/* button {
+	cursor: pointer;
+	text-transform: uppercase;
+	margin-top: 10px;
+	margin-bottom: 10px;
+	line-height: 20px;
+	font-family: verdana;
+	font-size: 9px;
+	padding: 10 20px;
+	background:black;
+	border: black;
+	color: #fff;
+	margin-right: 10px;
+	width: 180px;
+}
+button:hover {
+	background: grey;
+} */
+
+
+/*
+canvas {
+	width: 1024px;
+	height: 1024px;
+	background-color: black;
+}
+
+input {
+	size: 18px;
+	margin-right: 20px;
+
+}
+.checked{
+	color: #1565C0;
+}
+.unchecked{
+	color:#E0E0E0
+}
+
+label {
+	margin-right: 50px;
+}
+
+div#canvas-frame {
+	border: none;
+	cursor: crosshair;
+	width: 100%;
+	height: 600px;
+	background-color: #EEEEEE;
+}*/
+
+
+#gui {
+  font-size: 9px;
+  font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+}
