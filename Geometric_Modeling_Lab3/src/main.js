@@ -95,7 +95,7 @@ var meshArray = [];
 var v1, v2, v3;
 var mesh;
 var meshGeometry = new THREE.Geometry();
-var meshMaterial = new THREE.MeshBasicMaterial();
+var meshMaterial = new THREE.MeshStandardMaterial( { color : 0x00cc00 } );
 
 var params = {
 
@@ -1309,6 +1309,35 @@ function handleFiles(files) {
 
 }
 
+function update3DSurface() {
+
+	clear();
+	removePoint();
+	triangulation();
+
+
+	for (var i = 0; i < numberOfFaces; i++) {
+		//create a triangular geometry
+		meshGeometry = new THREE.Geometry();
+		var p0 = vertices[faces[i][0]];
+		var p1 = vertices[faces[i][1]];
+		var p2 = vertices[faces[i][2]];
+		meshGeometry.vertices.push( new THREE.Vector3(p0.x, p0.y, p0.z) );
+		meshGeometry.vertices.push( new THREE.Vector3(p1.x, p1.y, p1.z) );
+		meshGeometry.vertices.push( new THREE.Vector3(p2.x, p2.y, p2.z) );
+
+		var face = new THREE.Face3( 0, 1, 2);
+		//add the face to the geometry's faces array
+		meshGeometry.faces.push( face );
+
+		//the face normals and vertex normals can be calculated automatically if not supplied above
+		meshGeometry.computeFaceNormals();
+		meshGeometry.computeVertexNormals();
+
+		scene.add( new THREE.Mesh( meshGeometry, meshMaterial ) );
+	}
+}
+
 function importOFF() {
 	var x = document.getElementById('myInput');
 	x.click();
@@ -1377,6 +1406,7 @@ function update3D() {
 		updateCatmullClark();
 	} else if (params.Surface == "Loop Surface") {
 		updateLoop();
+		//update3DSurface();
 	}
 
 }
