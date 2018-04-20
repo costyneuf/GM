@@ -165,7 +165,7 @@ function updateSampling()
 	clear();
 	if (params["Curve Shape"] == "Circle") {
 		var radius = 400;
-		for (var i = 0; i < 120; i++) {
+		for (var i = 0; i < 30; i++) {
 			var angle = Math.random() * 2 * Math.PI;
 			controlPoints.size++;
 			var x = radius * Math.cos(angle);
@@ -389,6 +389,7 @@ function computeDelaunay()
         	open.push(closed[i]);
 
     //console.log(open);
+    controlPoints.positions.splice(n, 3);
     return open;
 
 }
@@ -397,6 +398,8 @@ function computeVoronoi()
 {
 	removeVoronoiEdge();
 }
+
+var nearestNeighbor;
 
 /* O(n) */
 function findNearestNeighbor( i )
@@ -444,7 +447,7 @@ function halfNeighbor( i1, i2 )
 function NNCrust() {
 
 	/* O(n) */
-	var nearestNeighbor = [];
+	nearestNeighbor = [];
 	for (var i = 0; i < controlPoints.size; i++) {
 		nearestNeighbor.splice(i, 0, []);
 		if (controlPoints.positions[i].y != 0) {
@@ -506,7 +509,8 @@ function Crust() {
 	/* let V be the Voronoi Vertices of Vor P */
 	var size_temp = parseInt(controlPoints.size);
 	//var Vor = [];
-	console.log(triangles.length);
+	//console.log(triangles.length);
+	//console.log(controlPoints.positions[0]);
 	var temp_ctrl = [];
 	for (var i = 0; i < triangles.length; i++) {
 		var p1 = controlPoints.positions[triangles[i][0]];
@@ -517,14 +521,16 @@ function Crust() {
 		temp_ctrl.push(new THREE.Vector3(parseFloat(x), 0, parseFloat(z)));
 		//controlPoints.size++;
 		//controlPoints.nextIndex++;
-		drawDelaunayEdge(p1, p2);
-		drawDelaunayEdge(p2, p3);
-		drawDelaunayEdge(p3, p1);
+		// drawDelaunayEdge(p1, p2);
+		// drawDelaunayEdge(p2, p3);
+		// drawDelaunayEdge(p3, p1);
 		// drawVoronoiEdge(Vor[Vor.length - 1], p1);
 		// drawVoronoiEdge(Vor[Vor.length - 1], p2);
 		// drawVoronoiEdge(Vor[Vor.length - 1], p3);
 	}
 
+	//console.log(controlPoints.positions.length);
+	//console.log(controlPoints.positions);
 	for (var i = 0; i < temp_ctrl.length; i++) {
 
 		var object = addSplineObject(new THREE.Vector3(temp_ctrl[i].x, 0, temp_ctrl[i].z));
@@ -535,7 +541,7 @@ function Crust() {
 		controlPoints.nextIndex++;
 	}
 	static = false;
-	console.log(controlPoints.positions.length);
+	//console.log(controlPoints.positions.length);
 
 	/* compute Del(P U V) */
 	var triangles2 = computeDelaunay();
@@ -552,8 +558,15 @@ function Crust() {
 				E := E U pq;
 			endif	/* 
 	*/
-	console.log(triangles2);
+	//console.log(triangles2);
+	//console.log(controlPoints.positions);
 	for (var i = 0; i < triangles2.length; i++) {
+		// var p1 = controlPoints.positions[triangles2[i][0]];
+		// var p2 = controlPoints.positions[triangles2[i][1]];
+		// var p3 = controlPoints.positions[triangles2[i][2]];
+		// drawDelaunayEdge(p1, p2);
+		// drawDelaunayEdge(p2, p3);
+		// drawDelaunayEdge(p3, p1);
 		if (triangles2[i][0] < size_temp && triangles2[i][1] < size_temp) {
 			var i1 = edge[triangles2[i][0]].indexOf(-1);
 			edge[triangles2[i][0]][i1] = parseInt(triangles2[i][1]);
@@ -575,9 +588,11 @@ function Crust() {
 		
 	}
 
+	//console.log(controlPoints.positions);
 	for (var i = 0; i < triangles.length; i++) {
 		controlPoints.positions.splice(size_temp, 1);
 	}
+	//console.log(controlPoints.positions);
 	controlPoints.size = size_temp;
 	controlPoints.nextIndex = size_temp;
 
@@ -586,14 +601,23 @@ function Crust() {
 	i1 = 0;
 	i2 = 0;
 	console.log(edge);
+	//console.log(controlPoints.positions);
 	for (var i = 1; i < size_temp; i++) {
-		i2 = edge[i1][0] == i1 ? edge[i1][1] : edge[i1][0];
-		temp.push(controlPoints.positions[i2]);
-		i1 = i2;
+		if (edge[i1].length > 0) {
+			i2 = edge[i1][0];
+			edge[i1].pop();
+			edge[i2].splice(edge[i2].indexOf(i1), 1);
+			console.log(i1 + "\t" + i2);
+			var p = controlPoints.positions[i2];
+			temp.push(new THREE.Vector3(p.x, p.y, p.z));
+			i1 = i2;
+		} 
+		//i2 = edge[i1][0] != i1 ? edge[i1][1] : edge[i1][0];
+		
 	}
 
-
-	return temp;
+	console.log(temp);
+	return  copyAndModifyYOfArray(temp, 0, 0);
 
 }
 
