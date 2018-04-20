@@ -55,7 +55,7 @@ var controlPolygon = {
 
 var controlPolygonColor = new THREE.Color('green');
 var controlPolygonMaterial = new THREE.LineBasicMaterial({
-	color: controlPolygonColor, opacity: 0.5, linewidth: 1 });
+	color: controlPolygonColor, opacity: 0.5, linewidth: 0.5 });
 var controlPolygonGeometry;
 var controlPolygonLine = [];
 
@@ -99,12 +99,19 @@ var meshMaterial = new THREE.MeshStandardMaterial( { color : 0x00cc00 } );
 
 var params = {
 
+	/* Curve Reconstruction */
+	'Curve Reconstruction': '',
+	'Curve Reconstruction Visible': false,
+
 	/* Points */
 	'Add Point': addPoint,
 	'Remove Point': removePoint,
 	'Insert Point': insertPoint,
 	'Duplicate Point': duplicatePoint,
 	'Clear': clear,
+	'Generate Random Points': 12,
+	"Voronoi Diagram": false,
+	"Delaunay Diagram": false,
 
 	/* value */
 	'Subdivision': 4,
@@ -112,12 +119,12 @@ var params = {
 	'v': 0.1,
 
 	/* Curve */
-	'Curve': 'Bezier Curve',
-	'Curve Visible': true,
+	'Curve': '',
+	'Curve Visible': false,
 	//'Closed': false,
 
 	/* Control Points Generator */
-	'Control Polyhedron': 'Extrusion',
+	'Control Polyhedron': '',
 	'Control Polyhedron Visible': false,
 
 	/* Surface Type */
@@ -129,42 +136,167 @@ var params = {
 
 };
 
-function addFacet(v1, v2, v3) {
-
-	meshGeometry = new THREE.Geometry();
-	meshGeometry.vertices.push(v1);
-	meshGeometry.vertices.push(v2);
-	meshGeometry.vertices.push(v3);
-	meshGeometry.faces.push(new THREE.Face3(0, 1 ,2));
-
-
-	mesh = new THREE.Mesh(meshGeometry, meshMaterial);
-	meshArray.push(mesh);
-	mesh.castShadow = true;
-	mesh.receiveShadow = true;
-	scene.add(mesh);
+function updateRandomPoints(value)
+{
+	for (var i = 0; i < value; i++) {			
+		controlPoints.size++;
+		var x = Math.random() * 1000 - 500;
+		var y = 0;
+		var z = Math.random() * 800 - 400;
+		var object = addSplineObject(new THREE.Vector3(x, y, z));
+		controlPoints.positions.splice(controlPoints.nextIndex, 0, object.position);
+		splineHelperObjects.splice(splineHelperObjects.length, 0, object);
+		controlPoints.nextIndex++;
+	}	
 }
-function addFacet4(v1, v2, v3, v4) {
-	meshGeometry = new THREE.Geometry();
-	meshGeometry.vertices.push(v1);
-	meshGeometry.vertices.push(v2);
-	meshGeometry.vertices.push(v3);
-	meshGeometry.vertices.push(v4);
-	meshGeometry.faces.push(new THREE.Face4(0, 1 ,2, 3));
 
+function updateCurveReconstruction()
+{
+	var temp = [];
 
-	mesh = new THREE.Mesh(meshGeometry, meshMaterial);
-	meshArray.push(mesh);
-	mesh.castShadow = true;
-	mesh.receiveShadow = true;
-	scene.add(mesh);
-}
-function clearMesh() {
-	while (meshArray.length > 0){
-		scene.remove(meshArray.pop());
+	if (params["Curve Reconstruction"] == "Crust") {
+		Crust( temp );
+	} else if (params["Curve Reconstruction"] == "NN-Crust") {
+		NNCrust( temp );
 	}
-	meshArray = [];
+	
+	
+	while (controlPoints.size != 0) {
+		controlPoints.size --;
+		controlPoints.positions.splice(controlPoints.nextIndex - 1, 1);
+		controlPoints.nextIndex--;
+		scene.remove(splineHelperObjects.splice(controlPoints.nextIndex, 1).pop());
+	}
+	
+	for (var i = 0; i < temp.length; i++) {			
+		controlPoints.size++;
+		var object = addSplineObject(new THREE.Vector3(temp[i].x, temp[i].y, temp[i].z));
+		controlPoints.positions.splice(controlPoints.nextIndex, 0, object.position);
+		splineHelperObjects.push(object);
+		controlPoints.nextIndex++;
+		update3D();
+	}	
 }
+
+var VoronoiEdge = [];
+function drawVoronoiEdge(p1, p2)
+{
+	var VoronoiGeometry = new THREE.Geometry();
+	VoronoiGeometry.vertices.push(new THREE.Vector3(p1.x, p1.y, p1.z));
+	VoronoiGeometry.vertices.push(new THREE.Vector3(p2.x, p2.y, p2.z));
+	var new_VoronoiEdge = new THREE.Line(VoronoiGeometry, controlPolygonMaterial);
+	scene.add(new_VoronoiEdge);
+	new_VoronoiEdge.castShadow = true;
+	new_VoronoiEdge.receiveShadow = true;
+	VoronoiEdge.push(new_VoronoiEdge);
+}
+function removeVoronoiEdge()
+{
+	while (VoronoiEdge.length > 0) {
+		scene.remove(VoronoiEdge.pop());
+	}
+	VoronoiEdge = [];
+}
+
+var DelaunayEdge = [];
+function drawDelaunayEdge(p1, p2)
+{
+	var DelaunayGeometry = new THREE.Geometry();
+	DelaunayGeometry.vertices.push(new THREE.Vector3(p1.x, p1.y, p1.z));
+	DelaunayGeometry.vertices.push(new THREE.Vector3(p2.x, p2.y, p2.z));
+	var new_DelaunayEdge = new THREE.Line(DelaunayGeometry, curveMaterial);
+	scene.add(new_DelaunayEdge);
+	new_DelaunayEdge.castShadow = true;
+	new_DelaunayEdge.receiveShadow = true;
+	DelaunayEdge.push(new_DelaunayEdge);
+}
+function removeDelaunayEdge()
+{
+	while (DelaunayEdge.length > 0) {
+		scene.remove(DelaunayEdge.pop());
+	}
+	DelaunayEdge = [];
+}
+
+function computeDelaunay()
+{
+	removeDelaunayEdge();
+}
+
+function computeVoronoi()
+{
+	removeVoronoiEdge();
+}
+
+function NNCrust( temp ) {
+
+
+	/* Compute the nearest neighbor */
+
+
+	/* Compute the half neighbor */
+}
+
+function Crust( temp ) {
+	
+	/* 
+	 *	CRUST(P) 
+	 */
+
+	/* compute Vor P */
+
+	/* let V be the Voronoi Vertices of Vor P */
+
+	/* compute Del(P U V) */
+
+	/* E := [] */
+
+	/* 
+		for each edge pq in Del(P U V) do
+			if p in P and q in P
+				E := E U pq;
+			endif
+	*/
+
+
+}
+
+// function addFacet(v1, v2, v3) {
+
+// 	meshGeometry = new THREE.Geometry();
+// 	meshGeometry.vertices.push(v1);
+// 	meshGeometry.vertices.push(v2);
+// 	meshGeometry.vertices.push(v3);
+// 	meshGeometry.faces.push(new THREE.Face3(0, 1 ,2));
+
+
+// 	mesh = new THREE.Mesh(meshGeometry, meshMaterial);
+// 	meshArray.push(mesh);
+// 	mesh.castShadow = true;
+// 	mesh.receiveShadow = true;
+// 	scene.add(mesh);
+// }
+// function addFacet4(v1, v2, v3, v4) {
+// 	meshGeometry = new THREE.Geometry();
+// 	meshGeometry.vertices.push(v1);
+// 	meshGeometry.vertices.push(v2);
+// 	meshGeometry.vertices.push(v3);
+// 	meshGeometry.vertices.push(v4);
+// 	meshGeometry.faces.push(new THREE.Face4(0, 1 ,2, 3));
+
+
+// 	mesh = new THREE.Mesh(meshGeometry, meshMaterial);
+// 	meshArray.push(mesh);
+// 	mesh.castShadow = true;
+// 	mesh.receiveShadow = true;
+// 	scene.add(mesh);
+// }
+// function clearMesh() {
+// 	while (meshArray.length > 0){
+// 		scene.remove(meshArray.pop());
+// 	}
+// 	meshArray = [];
+// }
 
 /* Bezier Surface and Cubic B-Spline Surface */
 var currentVerticeIndex = -1;
@@ -1269,7 +1401,7 @@ function updateInput() {
 	faces = [];
 	i++;
 
-	clearMesh();
+	//clearMesh();
 
 	for (var m = 0; m < numberOfFaces; m++) {
 		j = i;
@@ -1401,34 +1533,34 @@ function handleFiles(files) {
 
 }
 
-function update3DSurface() {
+// function update3DSurface() {
 
-	clear();
-	removePoint();
-	triangulation();
+// 	clear();
+// 	removePoint();
+// 	triangulation();
 
 
-	for (var i = 0; i < numberOfFaces; i++) {
-		//create a triangular geometry
-		meshGeometry = new THREE.Geometry();
-		var p0 = vertices[faces[i][0]];
-		var p1 = vertices[faces[i][1]];
-		var p2 = vertices[faces[i][2]];
-		meshGeometry.vertices.push( new THREE.Vector3(p0.x, p0.y, p0.z) );
-		meshGeometry.vertices.push( new THREE.Vector3(p1.x, p1.y, p1.z) );
-		meshGeometry.vertices.push( new THREE.Vector3(p2.x, p2.y, p2.z) );
+// 	for (var i = 0; i < numberOfFaces; i++) {
+// 		//create a triangular geometry
+// 		meshGeometry = new THREE.Geometry();
+// 		var p0 = vertices[faces[i][0]];
+// 		var p1 = vertices[faces[i][1]];
+// 		var p2 = vertices[faces[i][2]];
+// 		meshGeometry.vertices.push( new THREE.Vector3(p0.x, p0.y, p0.z) );
+// 		meshGeometry.vertices.push( new THREE.Vector3(p1.x, p1.y, p1.z) );
+// 		meshGeometry.vertices.push( new THREE.Vector3(p2.x, p2.y, p2.z) );
 
-		var face = new THREE.Face3( 0, 1, 2);
-		//add the face to the geometry's faces array
-		meshGeometry.faces.push( face );
+// 		var face = new THREE.Face3( 0, 1, 2);
+// 		//add the face to the geometry's faces array
+// 		meshGeometry.faces.push( face );
 
-		//the face normals and vertex normals can be calculated automatically if not supplied above
-		meshGeometry.computeFaceNormals();
-		meshGeometry.computeVertexNormals();
+// 		//the face normals and vertex normals can be calculated automatically if not supplied above
+// 		meshGeometry.computeFaceNormals();
+// 		meshGeometry.computeVertexNormals();
 
-		scene.add( new THREE.Mesh( meshGeometry, meshMaterial ) );
-	}
-}
+// 		scene.add( new THREE.Mesh( meshGeometry, meshMaterial ) );
+// 	}
+// }
 
 function importOFF() {
 	var x = document.getElementById('myInput');
@@ -1475,18 +1607,33 @@ function copyAndModifyYOfArray(A, row_index, offset) {
 	return B;
 }
 
-function update3D() {
-	updateLine();
-	if (params["Curve Visible"]){
-		updateCurve();
+function update3D(changeControlPolygon) {
+	
+	if (params["Curve Reconstruction Visible"]){
+		updateLine();
 	} else {
-		clearCurvePoints();
+		removeLine();
 	}
-	if (params["Control Polyhedron Visible"]){
-		updateControlPolygon();
-	} else {
-		clearControlPolygon();
+	if (controlPoints.size >= 3) {
+		updateCurve();	
+		if (params["Curve Visible"]){
+			drawCurvePoints();
+		} else {
+			removeCurvePoints();
+		}
 	}
+	if (controlPoints.size >= 4) {
+		if (changeControlPolygon){
+			// Do nothing
+		} else {
+			updateControlPolygon();
+		}
+		if (params["Control Polyhedron Visible"]){
+			drawControlPolygon();
+		} else {
+			removeControlPolygon();
+		}
+	}	
 	//updateInput();
 	if (params.Surface == "Bezier Surface") {
 		updateBezierSurface();
@@ -1503,12 +1650,45 @@ function update3D() {
 
 }
 
+function updateSurface() {
+
+	if (params.Surface == "Bezier Surface") {
+		updateBezierSurface();
+	} else if (params.Surface == "Cubic B-Spline Surface") {
+		updateSplinePoints();
+	} else if (params.Surface == "Doo Sabin Surface") {
+		updateDooSabin();
+	} else if (params.Surface == "Catmull-Clark Surface") {
+		updateCatmullClark();
+	} else if (params.Surface == "Loop Surface") {
+		updateLoop();
+	}
+}
+
 function updateExtrusion() {
 
 	if (controlPoints.size <= 3){
 		return;
 	}
 
+	
+
+	while(objectArray.length > 0) {
+		//splineHelperObjects.splice(controlPoints.nextIndex, 1);
+		scene.remove(objectArray.pop());
+
+	}
+	for (var i = 1; i < controlPolygon.row; i++) {
+		for (var j = 0; j < controlPolygon.column; j++) {
+			splineHelperObjects.pop();
+		}
+	}
+	removeControlPolygon();
+	controlPolygonLine = [];
+	objectArray = [];
+	controlPolygon.positions = [];
+	controlPolygon.row = 0;
+	controlPolygon.column = 0;
 
 	/* Add 1st row of control polygon points */
 	var temp = copyAndModifyYOfArray(controlPoints.positions, 0, OFFSET);
@@ -1518,10 +1698,28 @@ function updateExtrusion() {
 
 	/* Add 2nd ~ (EXTRUSION_TIME + 1)th row of control polygon points */
 	for (var i = 1; i <= EXTRUSION_TIME; i++) {
+
+		controlPolygon.positions[i] = [];
 		temp = copyAndModifyYOfArray(controlPoints.positions, i, OFFSET);
-		controlPolygon.positions.push(temp);
+		for (var j = 0; j < temp.length; j++) {
+			var pos = new THREE.Vector3(temp[j].x, temp[j].y, temp[j].z);
+			var object = addSplineObject(pos);
+			controlPolygon.positions[i].splice(j, 0, object.position);
+			objectArray.push(object);
+			splineHelperObjects.push(object);
+		}
+		//controlPolygon.positions.push(temp);
 		controlPolygon.row++;
 	}
+
+	// for (var i = 1; i < controlPolygon.row; i++) {
+	// 	for (var j = 0; j < controlPolygon.column; j++) {
+	// 		var object = addSplineObject(controlPolygon.positions[i][j]);
+	// 		controlPolygon.positions[i][j] = object.position;
+	// 		objectArray.push(object);
+	// 		splineHelperObjects.push(object);
+	// 	}
+	// }
 
 	// /* Add Mesh */
 	// for (var i = 1; i < controlPolygon.row; i++) {
@@ -1542,30 +1740,31 @@ function updateExtrusion() {
 
 }
 
-function updateControlPolygon() {
-
+function drawControlPolygon() {
+	
+	// Check whether the condition has been satisfied
 	if (controlPoints.size <= 3){
+		alert("The size of control points is less than 4!");
 		return;
 	}
 
-
-	if (controlPolygon.row * controlPolygon.column !== 0) {
-		clearControlPolygon();
-		clearMesh();
+	// Clear data and canvas	
+	//removeControlPolygon();
+	
+	while (controlPolygonLine.length > 0){
+		scene.remove(controlPolygonLine.splice(0, 1).pop());
 	}
+	controlPolygonLine = [];
 
-	if (params["Control Polyhedron"] === "Extrusion") {
-		updateExtrusion();
-	}
-
+	// Draw control polygon
 	if (controlPolygon.row * controlPolygon.column !== 0){
-		for (var i = 1; i < controlPolygon.row; i++) {
-			for (var j = 0; j < controlPolygon.column; j++) {
-				var object = addSplineObject(controlPolygon.positions[i][j]);
-				objectArray.push(object);
-				//splineHelperObjects.push(object);
-			}
-		}
+		// for (var i = 1; i < controlPolygon.row; i++) {
+		// 	for (var j = 0; j < controlPolygon.column; j++) {
+		// 		var object = addSplineObject(controlPolygon.positions[i][j]);
+		// 		objectArray.push(object);
+		// 		splineHelperObjects.push(object);
+		// 	}
+		// }
 
 		for (var i = 0; i < controlPolygon.row; i++) {
 
@@ -1575,7 +1774,29 @@ function updateControlPolygon() {
 			var new_controlPolygonLine = new THREE.Line(
 				controlPolygonGeometry, controlPolygonMaterial);
 			scene.add(new_controlPolygonLine);
+			new_controlPolygonLine.castShadow = true;
+			new_controlPolygonLine.receiveShadow = true;
 			controlPolygonLine.push(new_controlPolygonLine);
+			
+		}
+
+		for (var i = 0; i < controlPolygon.row - 1; i++) {
+			for (var j = 0; j < controlPolygon.positions[i].length - 1; j++) {
+				
+				controlPolygonGeometry = new THREE.Geometry();
+
+				var p1 = controlPolygon.positions[i][j];
+				var p2 = controlPolygon.positions[i + 1][j + 1];
+				controlPolygonGeometry.vertices.push(new THREE.Vector3(p1.x, p1.y, p1.z));
+				controlPolygonGeometry.vertices.push(new THREE.Vector3(p2.x, p2.y, p2.z));
+
+				var new_controlPolygonLine = new THREE.Line(
+				controlPolygonGeometry, controlPolygonMaterial);
+				scene.add(new_controlPolygonLine);
+				new_controlPolygonLine.castShadow = true;
+				new_controlPolygonLine.receiveShadow = true;
+				controlPolygonLine.push(new_controlPolygonLine);
+			}
 		}
 
 		for (var i = 0; i < controlPolygon.column; i++) {
@@ -1593,10 +1814,36 @@ function updateControlPolygon() {
 			var new_controlPolygonLine = new THREE.Line(
 				controlPolygonGeometry, controlPolygonMaterial);
 			scene.add(new_controlPolygonLine);
+			new_controlPolygonLine.castShadow = true;
+			new_controlPolygonLine.receiveShadow = true;
 			controlPolygonLine.push(new_controlPolygonLine);
 		}
 
 	}
+
+}
+
+function updateControlPolygon() {
+
+	if (controlPoints.size <= 3){
+		alert("The size of control points is less than 4!");
+		return;
+	}
+
+
+	// controlPolygonLine = [];
+	// objectArray = [];
+	// controlPolygon.positions = [];
+	// controlPolygon.row = 0;
+	// controlPolygon.column = 0;
+	//clearMesh();
+
+
+	if (params["Control Polyhedron"] === "Extrusion") {
+		updateExtrusion();
+	}
+
+	
 }
 
 function init() {
@@ -1606,8 +1853,8 @@ function init() {
 	/* Initialize scene and camera */
 	scene = new THREE.Scene();
 	scene.background = new THREE.Color( 0xf0f0f0 );
-	camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 10000 );
-	camera.position.set( 0, 250, 1000 );
+	camera = new THREE.PerspectiveCamera( 70, window.innerWidth * 3 / 4 / window.innerHeight, 1, 10000 );
+	camera.position.set( 0, 1000, 0 );
 	scene.add( camera );
 
 	/* Initialize light */
@@ -1641,7 +1888,7 @@ function init() {
 	/* Initialize renderer */
 	renderer = new THREE.WebGLRenderer( { antialias: true } );
 	renderer.setPixelRatio( window.devicePixelRatio );
-	renderer.setSize( window.innerWidth, window.innerHeight );
+	renderer.setSize( window.innerWidth * 3 / 4, window.innerHeight );
 	renderer.shadowMap.enabled = true;
 	container.appendChild( renderer.domElement );
 
@@ -1650,46 +1897,72 @@ function init() {
 	var customContainer = document.getElementById('gui');
 	customContainer.appendChild(gui.domElement);
 
-	gui.add(params, 'Curve', ['Bezier Curve']).onChange(function(){
-		update3D();
+	gui.add(params, 'Curve Reconstruction', ['Crust', 'NN-Crust']).onChange(function(){
+		updateCurveReconstruction();
+	});
+	gui.add(params, 'Curve Reconstruction Visible').onChange(function(value){
+		if (value) {
+			updateLine();
+		} else {
+			removeLine();
+		}
 	});
 
-	gui.add(params, 'Curve Visible').onChange(function(){
-		update3D();
+	gui.add(params, 'Curve', ['Bezier Curve', 'Cubic Uniform B-Spline', 'De Casteljau Subdivision', 'Quadric B-Spline']).onChange(function(){
+		updateCurve();
+	});
+
+	gui.add(params, 'Curve Visible').onChange(function(value){
+		if (value) {
+			drawCurvePoints();
+		} else {
+			removeCurvePoints();
+		}
 	});
 	// gui.add(params, 'Closed').onChange(function() {
 	// 	var p = controlPoints.positions[0];
 	// 	controlPoints.positions.push(new THREE.Vector3(p.x, p.y, p.z));
 	// 	update3D();
 	// });
-	gui.add(params, 'Control Polyhedron', ['Extrusion']).onChange(function(){
-		update3D();
+	gui.add(params, 'Control Polyhedron', ['Revolution', 'Extrusion', 'Swap']).onChange(function(){
+		updateControlPolygon();
 	});
-	gui.add(params, 'Control Polyhedron Visible').onChange(function(){
-		update3D();
+	gui.add(params, 'Control Polyhedron Visible').onChange(function(value){
+		if (value) {
+			drawControlPolygon();
+		} else {
+			removeControlPolygon();
+		}
 	});
 	gui.add(params, 'u', 0.05, 0.5).step(0.05).onChange(function(value){
 		controlSurface.u = value;
-		update3D();
 	});
 	gui.add(params, 'v', 0.05, 0.5).step(0.05).onChange(function(value){
 		controlSurface.v = value;
-		update3D();
 	});
-	gui.add(params, 'Surface', ['Extrusion', 'Bezier Surface', 'Cubic B-Spline Surface',
+	gui.add(params, 'Surface', ['Bezier Surface', 'Cubic B-Spline Surface',
 	'Doo Sabin Surface', 'Catmull-Clark Surface', 'Loop Surface']).onChange(function(){
-		update3D();
+		updateSurface();
 	});
 
 	gui.add( params, 'Subdivision', 1, 6).step(1).onChange(function(value){
 		subdivisions = value;
-		update3D();
 	});
 	gui.add( params, 'Add Point' );
 	gui.add( params, 'Remove Point');
 	gui.add( params, 'Insert Point');
 	gui.add( params, 'Duplicate Point');
 	gui.add(params, 'Clear');
+	gui.add(params, 'Generate Random Points', 10, 100).step(1).onChange(function(value){
+		updateRandomPoints(value);
+		update3D();
+	});
+	gui.add(params, 'Voronoi Diagram').onChange(function(value){
+		computeVoronoi();
+	});
+	gui.add(params, 'Delaunay Diagram').onChange(function(value){
+		computeDelaunay();
+	});
 	gui.add(params, 'Import');
 	gui.add(params, 'Export');
 	gui.open();
@@ -1718,7 +1991,16 @@ function init() {
 		delayHideTransform();
 	} );
 	transformControl.addEventListener( 'objectChange', function( e ) {
-		update3D();
+
+		// if (controlPoints.size >= 4 && params["Control Polyhedron Visible"]) {
+		// 		// Remove Control Polygon Lines
+
+		// 		// Update Control Polygon Points
+
+		// 		// Draw Control Polygon
+		// }
+		
+		update3D(true);
 	} );
 
 	var dragcontrols = new THREE.DragControls( splineHelperObjects, camera, renderer.domElement ); //
@@ -1764,14 +2046,14 @@ function init() {
 
 function addSplineObject( position ) {
 
-	var material = new THREE.MeshLambertMaterial( { color: Math.random() * 0xffffff } );
+	var material = new THREE.MeshLambertMaterial( { color: 0x283747 } );
 	var object = new THREE.Mesh( geometry, material );
 
 	if ( position ) {
 		object.position.copy( position );
 	} else {
 		object.position.x = Math.random() * 1000 - 500;
-		object.position.y = Math.random() * 600;
+		object.position.y = 0;
 		object.position.z = Math.random() * 800 - 400;
 	}
 
@@ -1835,31 +2117,40 @@ function updateBezierCurve() {
 
 function updateCurve() {
 
-	if (controlPoints.size > 2) {
-
-		scene.remove(curve);
-
-		if (params.Curve === "Bezier Curve")
-		{
-			updateBezierCurve();
-		}
-
-		curveGeometry = new THREE.Geometry();
-		for (var i = 0; i < curvePoints.size; i++){
-			curveGeometry.vertices.push(curvePoints.positions[i]);
-		}
-		curve = new THREE.Line(curveGeometry, curveMaterial);
-		curve.castShadow = true;
-		curve.receiveShadow = true;
-		scene.add(curve);
+	if (controlPoints.size <= 2) {
+		alert("The size of points is less than 3!");
+		return;
 	}
+
+	if (params.Curve === "Bezier Curve")
+	{
+		updateBezierCurve();
+	}
+	
 
 }
 
+function drawCurvePoints() {
 
+	if (controlPoints.size <= 2) {
+		alert("The size of points is less than 3!");
+		return;
+	}
+
+	scene.remove(curve);	
+	curveGeometry = new THREE.Geometry();
+	for (var i = 0; i < curvePoints.size; i++){
+		curveGeometry.vertices.push(curvePoints.positions[i]);
+	}
+	curve = new THREE.Line(curveGeometry, curveMaterial);
+	curve.castShadow = true;
+	curve.receiveShadow = true;
+	scene.add(curve);
+
+}
 function updateLine() {
-	scene.remove(line);
 
+	scene.remove(line);
 	lineGeometry = new THREE.Geometry();
 	for (var i = 0; i < controlPoints.size; i++){
 		lineGeometry.vertices.push(controlPoints.positions[i]);
@@ -1867,6 +2158,13 @@ function updateLine() {
 	line = new THREE.Line(lineGeometry, lineMaterial);
 	line.castShadow = true;
 	line.receiveShadow = true;
+	scene.add(line);
+}
+
+function removeLine() {
+	scene.remove(line);
+	lineGeometry = new THREE.Geometry();
+	line = new THREE.Line(lineGeometry, lineMaterial);
 	scene.add(line);
 }
 
@@ -1879,6 +2177,7 @@ function addPoint() {
 	controlPoints.nextIndex++;
 	update3D();
 }
+
 
 function duplicatePoint() {
 
@@ -1918,49 +2217,71 @@ function insertPoint() {
 }
 
 /* Clear data in control polygen */
-function clearControlPolygon() {
+function removeControlPolygon() {
 
 	/* Clear canvas */
-	for (var i = 0; controlPolygonLine !== [] &&
-		i < controlPolygon.row + controlPolygon.column; i++) {
-		scene.remove(controlPolygonLine[i]);
+	while (controlPolygonLine.length > 0) {
+		scene.remove(controlPolygonLine.pop());
 	}
+	controlPolygonLine = [];
+	
+	
+	
+}
+function removeCurvePoints() {
+	scene.remove(curve);
+	curveGeometry = new THREE.Geometry();
+	curve = new THREE.Line(curveGeometry, curveMaterial);
+	scene.add(curve);
+}
 
+function clear() {
 
+	
 	while(objectArray.length > 0) {
 		//splineHelperObjects.splice(controlPoints.nextIndex, 1);
 		scene.remove(objectArray.pop());
-	}
 
+	}
+	for (var i = 1; i < controlPolygon.row; i++) {
+		for (var j = 0; j < controlPolygon.column; j++) {
+			splineHelperObjects.pop();
+		}
+	}
+	removeControlPolygon();
 	controlPolygonLine = [];
 	objectArray = [];
 	controlPolygon.positions = [];
 	controlPolygon.row = 0;
 	controlPolygon.column = 0;
-}
-function clearCurvePoints() {
-	scene.remove(curve);
-	curveGeometry = new THREE.Geometry();
-	curve = new THREE.Line(curveGeometry, curveMaterial);
-	curvePoints.size = 0;
-	curvePoints.positions = [];
-	scene.add(curve);
-}
-function clear() {
 
-	clearControlPolygon();
-
-	clearMesh();
-
+	//clearMesh();
+	removeLine();
 	while(controlPoints.size > 0){
-		removePoint();
+		controlPoints.size --;
+		controlPoints.positions.splice(controlPoints.nextIndex - 1, 1);
+		controlPoints.nextIndex--;
+		scene.remove(splineHelperObjects.splice(controlPoints.nextIndex, 1).pop());
 	}
 
+	removeCurvePoints();
+	curvePoints.size = 0;
+	curvePoints.positions = [];
 
-	clearCurvePoints();
+	
 
-	addPoint();
+	currentVerticeIndex = -1;
+	currentEdgeIndex = -1;
+	vertices = [];
+	faces = [];
+	numberOfVertices = 0;
+	numberOfFaces = 0;
+
+	//splineHelperObjects = [];
+
+	//addPoint();
 }
+
 function animate() {
 	requestAnimationFrame( animate );
 	render();

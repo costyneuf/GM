@@ -69,4 +69,5 @@ div#canvas-frame {
 #gui {
   font-size: 9px;
   font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+  float:right;
 }
