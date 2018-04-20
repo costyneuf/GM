@@ -190,7 +190,7 @@ function updateCurveReconstruction()
 		temp = NNCrust();
 	}
 	//console.log(temp);
-	while (controlPoints.size != 0) {
+	while (controlPoints.size > 0) {
 		controlPoints.size --;
 		controlPoints.positions.splice(controlPoints.nextIndex - 1, 1);
 		controlPoints.nextIndex--;
@@ -307,7 +307,7 @@ function dedup(edges) {
 
 function computeDelaunay()
 {
-	removeDelaunayEdge();
+	//removeDelaunayEdge();
 
 	/* Initialize indices array */
 	var indices = [];
@@ -514,7 +514,7 @@ function Crust() {
 		var p3 = controlPoints.positions[triangles[i][2]];
 		var x = triangles[i][3];
 		var z = triangles[i][4];
-		temp_ctrl.push(new THREE.Vector3(x, 0, z));
+		temp_ctrl.push(new THREE.Vector3(parseFloat(x), 0, parseFloat(z)));
 		//controlPoints.size++;
 		//controlPoints.nextIndex++;
 		drawDelaunayEdge(p1, p2);
