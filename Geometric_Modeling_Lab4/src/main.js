@@ -561,12 +561,12 @@ function Crust() {
 	//console.log(triangles2);
 	//console.log(controlPoints.positions);
 	for (var i = 0; i < triangles2.length; i++) {
-		// var p1 = controlPoints.positions[triangles2[i][0]];
-		// var p2 = controlPoints.positions[triangles2[i][1]];
-		// var p3 = controlPoints.positions[triangles2[i][2]];
-		// drawDelaunayEdge(p1, p2);
-		// drawDelaunayEdge(p2, p3);
-		// drawDelaunayEdge(p3, p1);
+		var p1 = controlPoints.positions[triangles2[i][0]];
+		var p2 = controlPoints.positions[triangles2[i][1]];
+		var p3 = controlPoints.positions[triangles2[i][2]];
+		drawDelaunayEdge(p1, p2);
+		drawDelaunayEdge(p2, p3);
+		drawDelaunayEdge(p3, p1);
 		if (triangles2[i][0] < size_temp && triangles2[i][1] < size_temp) {
 			var i1 = edge[triangles2[i][0]].indexOf(-1);
 			edge[triangles2[i][0]][i1] = parseInt(triangles2[i][1]);
@@ -1974,6 +1974,7 @@ function update3D(changeControlPolygon) {
 	} else {
 		removeLine();
 	}
+
 	if (controlPoints.size >= 3) {
 		updateCurve();	
 		if (params["Curve Visible"]){
@@ -2481,6 +2482,38 @@ function updateBezierCurve() {
 
 }
 
+function updateCubicSplineCurve() {
+
+	curvePoints.positions = [];
+	curvePoints.size = 0;
+
+	var n =  controlPoints.size - 1;
+	for (var i = 1; i <= n - 2; i++) {
+		var p1 = controlPoints.positions[i - 1];
+		var p2 = controlPoints.positions[i];
+		var p3 = controlPoints.positions[i + 1];
+		var p4 = controlPoints.positions[i + 2];
+		var pt = [p1, p2, p3, p4];
+
+		var seg = 0.01;
+		var u = seg;
+		while (u < 1) {
+			var x = 0, y = 0, z = 0;
+			for (var j = 1; j <= 4; j++) {
+				x += basis(j, u) * pt[j - 1].x;
+				y += basis(j, u) * pt[j - 1].y;
+				z += basis(j, u) * pt[j - 1].z;
+			}
+
+			var p = new THREE.Vector3(x, y, z);
+			curvePoints.size++;
+			curvePoints.positions.push(p);
+			u += seg;
+
+		}
+	}
+}
+
 function updateCurve() {
 
 	if (controlPoints.size <= 2) {
@@ -2491,9 +2524,46 @@ function updateCurve() {
 	if (params.Curve === "Bezier Curve")
 	{
 		updateBezierCurve();
+	} else if (params.Curve == "Cubic Uniform B-Spline") {
+		updateCubicSplineCurve();
+	} else if (params.Curve == "De Casteljau Subdivision") {
+		updateDeCasteljau();
+	} else if (params.Curve == "Quadric B-Spline") {
+		updateQuadSpline();
 	}
 	
 
+}
+
+var SEGMENT = 0.3;
+var poly1 = [], poly2 = [];
+function updateDeCasteljau() {
+	curvePoints.positions = copyAndModifyYOfArray(controlPoints.positions, 0, 0);
+	curvePoints.size = controlPoints.size;
+	poly1 = [], poly2 = [];
+	for (var i = 0; i < subdivisions; i++) {
+		var curvePoints_temp = [];
+		var start = curvePoints.positions[0];
+		curvePoints_temp.push(new THREE.Vector3(start.x, start.y, start.z));
+		for (var j = 0; j < curvePoints.size - 1; j++) {
+			var x, y, z;
+			var p1 = curvePoints.positions[j];
+			var p2 = curvePoints.positions[j + 1];
+			x = SEGMENT * p1.x + (1 - SEGMENT) * p2.x;
+			y = SEGMENT * p1.y + (1 - SEGMENT) * p2.y;
+			z = SEGMENT * p1.z + (1 - SEGMENT) * p2.z;
+			curvePoints_temp.push(new THREE.Vector3(x, y, z));
+
+		}
+		var end = curvePoints.positions[curvePoints.size - 1];
+		curvePoints_temp.push(new THREE.Vector3(end.x, end.y, end.z));
+		curvePoints.positions = copyAndModifyYOfArray(curvePoints_temp, 0, 0);
+		curvePoints.size = curvePoints.positions.length;
+	}
+}
+
+function oneSubdivide() {
+	
 }
 
 function drawCurvePoints() {
@@ -2516,6 +2586,7 @@ function drawCurvePoints() {
 }
 function updateLine() {
 
+	removeDelaunayEdge();
 	scene.remove(line);
 	lineGeometry = new THREE.Geometry();
 	for (var i = 0; i < controlPoints.size; i++){
