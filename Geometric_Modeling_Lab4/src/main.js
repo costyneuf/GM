@@ -8,6 +8,7 @@ String.prototype.format = function () {
 	return str;
 };
 
+var static = false;
 
 var objectArray = [];
 var geometry = new THREE.BoxGeometry( 10, 10, 10 );
@@ -141,9 +142,17 @@ function updateRandomPoints(value)
 {
 	for (var i = 0; i < value; i++) {			
 		controlPoints.size++;
-		var x = Math.random() * 1000 - 500;
+		var x, z;
+		do {
+          x = Math.random() - 0.5;
+          z = Math.random() - 0.5;
+        } while(x * x + z * z > 0.25);
+
+        x = (x * 0.96875 + 0.5) * window.innerWidth * 3 / 4;
+        z = (z * 0.96875 + 0.5) * window.innerHeight;
+		//var x = Math.random() * 1000 - 500;
 		var y = 0;
-		var z = Math.random() * 800 - 400;
+		//var z = Math.random() * 800 - 400;
 		var object = addSplineObject(new THREE.Vector3(x, y, z));
 		controlPoints.positions.splice(controlPoints.nextIndex, 0, object.position);
 		splineHelperObjects.splice(splineHelperObjects.length, 0, object);
@@ -239,9 +248,149 @@ function removeDelaunayEdge()
 	DelaunayEdge = [];
 }
 
+function computeCircumcircle(V, i, j, k) {
+	var x1 = V[i].x, z1 = V[i].z,
+		x2 = V[j].x, z2 = V[j].z,
+		x3 = V[k].x, z3 = V[k].z;
+	var e = 1E-10;
+	var k1, k2, x, z, mx1, mx2, mz1, mz2, r;
+
+	/* Calculate middle points */
+	mx1 = (x1 + x2) / 2.0;
+    mx2 = (x2 + x3) / 2.0;
+    mz1 = (z1 + z2) / 2.0;
+    mz2 = (z2 + z3) / 2.0;
+
+    if (Math.abs(z1 - z2) < e) {
+    	k2  = -((x3 - x2) / (z3 - z2));
+        x  = (x2 + x1) / 2.0;
+        z  = k2 * (x - mx2) + mz2;
+    } else if (Math.abs(z2 - z3) < 0) {
+    	k1 = -((x2 - x1) / (z2 - z1));
+    	x  = (x3 + x2) / 2.0;
+      	z  = k1 * (x - mx1) + mz1;
+    } else {
+    	k1  = -((x2 - x1) / (z2 - z1));
+      	k2  = -((x3 - x2) / (z3 - z2));      	
+      	x  = (k1 * mx1 - k2 * mx2 + mz2 - mz1) / (k1 - k2);
+      	z  = (Math.abs(z1 - z2) > Math.abs(z2 - z3)) ?
+        k1 * (x - mx1) + mz1 :
+        k2 * (x - mx2) + mz2;
+    }
+
+    r = (x2 - x) * (x2 - x) + (z2 - z) * (z2 - z);
+
+    //console.log([i, j, k, x, z, r]);
+    return [i, j, k, x, z, r]; /* vertices of a triangle, center of circle, radius ^ 2 */
+}
+
+function dedup(edges) {
+    
+    var i, j, a, b, m, n;
+    for(j = edges.length; j; ) {
+      b = edges[--j];
+      a = edges[--j];
+
+      for(i = j; i; ) {
+        n = edges[--i];
+        m = edges[--i];
+
+        if((a === m && b === n) || (a === n && b === m)) {
+          edges.splice(j, 2);
+          edges.splice(i, 2);
+          break;
+        }
+      }
+    }
+ }
+
+
 function computeDelaunay()
 {
 	removeDelaunayEdge();
+
+	/* Initialize indices array */
+	var indices = [];
+	for (var i = 0; i < controlPoints.size; i++) {
+		indices.push(i);
+	}
+	var n = controlPoints.size;
+
+	/* Sort indices based on the coordinate of x */
+	indices.sort(function(i, j) {
+        var diff = controlPoints.positions[i].x - controlPoints.positions[j].x;
+        return diff !== 0 ? diff : j - i;
+    });
+
+	/* Construct a super triangle */
+	// var triangles = [];
+	// var temp_triangles = [];
+	var M = 0;
+	for (var i = 0; i < controlPoints.size; i++) {
+		var p = controlPoints.positions[i];
+		if (Math.abs(p.x) > M) M = Math.abs(p.x);
+		if (Math.abs(p.z) > M) M = Math.abs(p.z);
+	}
+	var a = new THREE.Vector3(0, 0, 3 * M);
+	var b = new THREE.Vector3(-3 * M, 0, -3 * M);
+	var c = new THREE.Vector3(3 * M, 0, 0);
+	var superTriangle = [a, b, c];
+	controlPoints.positions.push(a, b, c);
+	// triangles.push(superTriangle);
+	// temp_triangles.push(superTriangle);
+
+	console.log(controlPoints.positions.length);
+	var open = [];
+	open.push(computeCircumcircle(controlPoints.positions, n, n + 1, n + 2));
+	//console.log(open[0]);
+    var closed = [];
+    var Delaunay_edges  = [];
+
+	/* Traverse each point in control points */
+	var t1, t2, t3, dx, dy;
+	for (var i = indices.length; i--; Delaunay_edges.length = 0) {
+		t3 = indices[i];
+		for(var j = open.length; j--; ) {         
+		    dx = controlPoints.positions[t3].x - open[j][3];
+		    if(dx > 0.0 && dx * dx > open[j][5]) {
+		      closed.push(open[j]);
+		      open.splice(j, 1);
+		      continue;
+		    }
+
+
+	        dy = controlPoints.positions[t3].z - open[j][4];
+	        if(dx * dx + dy * dy - open[j][5] > 1E-10)
+	          continue;
+          Delaunay_edges.push(
+            open[j][0], open[j][1],
+            open[j][1], open[j][2],
+            open[j][2], open[j][0]
+          );
+          open.splice(j, 1);
+	    }
+
+        /* Remove any doubled edges. */
+        dedup(Delaunay_edges);
+
+        /* Add a new triangle for each edge. */
+        for(j = Delaunay_edges.length; j; ) {
+          t2 = Delaunay_edges[--j];
+          t1 = Delaunay_edges[--j];
+          open.push(computeCircumcircle(controlPoints.positions, t1, t2, t3));
+        }
+    }
+
+    for(i = open.length; i--; ) closed.push(open[i]);
+    open.length = 0;
+
+    for(i = closed.length; i--; )
+        if(closed[i][0] < n && closed[i][1] < n && closed[i][2] < n) 
+        	open.push(closed[i]);
+
+    //console.log(open);
+    return open;
+
 }
 
 function computeVoronoi()
@@ -344,28 +493,107 @@ function NNCrust() {
 	return copyAndModifyYOfArray(temp, 0, 0);
 }
 
+var scene_temp = [];
 function Crust() {
 	
 	/* 
 	 *	CRUST(P) 
 	 */
-
+	 static = true;
+	 scene_temp = [];
 	/* compute Vor P */
-
+	var triangles = computeDelaunay();
 	/* let V be the Voronoi Vertices of Vor P */
+	var size_temp = parseInt(controlPoints.size);
+	//var Vor = [];
+	console.log(triangles.length);
+	var temp_ctrl = [];
+	for (var i = 0; i < triangles.length; i++) {
+		var p1 = controlPoints.positions[triangles[i][0]];
+		var p2 = controlPoints.positions[triangles[i][1]];
+		var p3 = controlPoints.positions[triangles[i][2]];
+		var x = triangles[i][3];
+		var z = triangles[i][4];
+		temp_ctrl.push(new THREE.Vector3(x, 0, z));
+		//controlPoints.size++;
+		//controlPoints.nextIndex++;
+		drawDelaunayEdge(p1, p2);
+		drawDelaunayEdge(p2, p3);
+		drawDelaunayEdge(p3, p1);
+		// drawVoronoiEdge(Vor[Vor.length - 1], p1);
+		// drawVoronoiEdge(Vor[Vor.length - 1], p2);
+		// drawVoronoiEdge(Vor[Vor.length - 1], p3);
+	}
+
+	for (var i = 0; i < temp_ctrl.length; i++) {
+
+		var object = addSplineObject(new THREE.Vector3(temp_ctrl[i].x, 0, temp_ctrl[i].z));
+		controlPoints.positions.splice(controlPoints.nextIndex, 0, object.position);
+		scene_temp.push(object);
+		//splineHelperObjects.splice(splineHelperObjects.length, 0, object);
+		controlPoints.size++;
+		controlPoints.nextIndex++;
+	}
+	static = false;
+	console.log(controlPoints.positions.length);
 
 	/* compute Del(P U V) */
+	var triangles2 = computeDelaunay();
 
 	/* E := [] */
+	var edge = [];
+	for (var i = 0; i < size_temp; i++) {
+		edge.push([-1, -1]);
+	}
 
 	/* 
 		for each edge pq in Del(P U V) do
 			if p in P and q in P
 				E := E U pq;
-			endif
+			endif	/* 
 	*/
+	console.log(triangles2);
+	for (var i = 0; i < triangles2.length; i++) {
+		if (triangles2[i][0] < size_temp && triangles2[i][1] < size_temp) {
+			var i1 = edge[triangles2[i][0]].indexOf(-1);
+			edge[triangles2[i][0]][i1] = parseInt(triangles2[i][1]);
+			var i2 = edge[triangles2[i][1]].indexOf(-1);
+			edge[triangles2[i][1]][i2] = parseInt(triangles2[i][0]);
+		}
+		else if (triangles2[i][2] < size_temp && triangles2[i][1] < size_temp) {
+			var i1 = edge[triangles2[i][2]].indexOf(-1);
+			edge[triangles2[i][2]][i1] = parseInt(triangles2[i][1]);
+			var i2 = edge[triangles2[i][1]].indexOf(-1);
+			edge[triangles2[i][1]][i2] = parseInt(triangles2[i][2]);
+		}
+		else if (triangles2[i][0] < size_temp && triangles2[i][2] < size_temp) {
+			var i1 = edge[triangles2[i][0]].indexOf(-1);
+			edge[triangles2[i][0]][i1] = parseInt(triangles2[i][2]);
+			var i2 = edge[triangles2[i][2]].indexOf(-1);
+			edge[triangles2[i][2]][i2] = parseInt(triangles2[i][0]);
+		}
+		
+	}
 
-	//return site;
+	for (var i = 0; i < triangles.length; i++) {
+		controlPoints.positions.splice(size_temp, 1);
+	}
+	controlPoints.size = size_temp;
+	controlPoints.nextIndex = size_temp;
+
+	var temp = [], i1, i2;
+	temp.push(controlPoints.positions[0]);
+	i1 = 0;
+	i2 = 0;
+	console.log(edge);
+	for (var i = 1; i < size_temp; i++) {
+		i2 = edge[i1][0] == i1 ? edge[i1][1] : edge[i1][0];
+		temp.push(controlPoints.positions[i2]);
+		i1 = i2;
+	}
+
+
+	return temp;
 
 }
 
@@ -2158,6 +2386,9 @@ function init() {
 function addSplineObject( position ) {
 
 	var material = new THREE.MeshLambertMaterial( { color: 0x283747 } );
+	if (static) {
+		material = new THREE.MeshLambertMaterial({ color: 0xC0392B });
+	}
 	var object = new THREE.Mesh( geometry, material );
 
 	if ( position ) {
