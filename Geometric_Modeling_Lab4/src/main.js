@@ -10,7 +10,7 @@ String.prototype.format = function () {
 
 
 var objectArray = [];
-var geometry = new THREE.BoxGeometry( 20, 20, 20 );
+var geometry = new THREE.BoxGeometry( 10, 10, 10 );
 
 var container;
 var camera, scene, renderer, spotlight;
@@ -102,6 +102,7 @@ var params = {
 	/* Curve Reconstruction */
 	'Curve Reconstruction': '',
 	'Curve Reconstruction Visible': false,
+	'Curve Shape': '',
 
 	/* Points */
 	'Add Point': addPoint,
@@ -150,17 +151,36 @@ function updateRandomPoints(value)
 	}	
 }
 
+function updateSampling()
+{
+	clear();
+	if (params["Curve Shape"] == "Circle") {
+		var radius = 400;
+		for (var i = 0; i < 120; i++) {
+			var angle = Math.random() * 2 * Math.PI;
+			controlPoints.size++;
+			var x = radius * Math.cos(angle);
+			var y = 0;
+			var z = radius * Math.sin(angle);
+			var object = addSplineObject(new THREE.Vector3(x, y, z));
+			controlPoints.positions.splice(controlPoints.nextIndex, 0, object.position);
+			splineHelperObjects.splice(splineHelperObjects.length, 0, object);
+			controlPoints.nextIndex++;
+		}
+	}
+}
+
+var max_distance = [0, 0, 0]; // [distance, index1, index2]
 function updateCurveReconstruction()
 {
 	var temp = [];
 
 	if (params["Curve Reconstruction"] == "Crust") {
-		Crust( temp );
+		temp = Crust();
 	} else if (params["Curve Reconstruction"] == "NN-Crust") {
-		NNCrust( temp );
+		temp = NNCrust();
 	}
-	
-	
+	//console.log(temp);
 	while (controlPoints.size != 0) {
 		controlPoints.size --;
 		controlPoints.positions.splice(controlPoints.nextIndex - 1, 1);
@@ -168,13 +188,14 @@ function updateCurveReconstruction()
 		scene.remove(splineHelperObjects.splice(controlPoints.nextIndex, 1).pop());
 	}
 	
+
 	for (var i = 0; i < temp.length; i++) {			
 		controlPoints.size++;
 		var object = addSplineObject(new THREE.Vector3(temp[i].x, temp[i].y, temp[i].z));
 		controlPoints.positions.splice(controlPoints.nextIndex, 0, object.position);
 		splineHelperObjects.push(object);
 		controlPoints.nextIndex++;
-		update3D();
+		//update3D();
 	}	
 }
 
@@ -228,16 +249,102 @@ function computeVoronoi()
 	removeVoronoiEdge();
 }
 
-function NNCrust( temp ) {
+/* O(n) */
+function findNearestNeighbor( i )
+{
+	var point = controlPoints.positions[i];
+	var d = 0, ret = 0;
+	for (var j = 0; j < controlPoints.size; j++) {
+		var p = controlPoints.positions[j];
+		var d_temp = Math.sqrt((p.x - point.x) * (p.x - point.x) + (p.z - point.z) * (p.z - point.z));
+		if ((d == 0 || d > d_temp) && d_temp != 0) {
+			d = d_temp;
+			ret = j;
+		}
+	}
 
+	if (max_distance == 0 || max_distance < d) max_distance = [d, i, ret];
+	return ret;
+}
+/* O(n) */
+function halfNeighbor( i1, i2 )
+{
+	var p1 = controlPoints.positions[i1];
+	var p2 = controlPoints.positions[i2];
+	var k = (-1) / ((p2.z - p1.z) / (p2.x - p1.x));
+	var b = p1.z - k * p1.x;
+	var side = p2.z - (k * p2.x + b);
+	var d = 0, ret = 0;;
 
-	/* Compute the nearest neighbor */
-
-
-	/* Compute the half neighbor */
+	for (var i = 0; i < controlPoints.size; i++) {
+		var p = controlPoints.positions[i];
+		if (side * (p.z - (k * p.x + b)) < 0) {
+			var d_temp = Math.sqrt((p.x - p1.x) * (p.x - p1.x) + (p.z - p1.z) * (p.z - p1.z));
+			if ((d == 0 || d > d_temp) && d_temp != 0) {
+				d = d_temp;
+				ret = i;
+			}
+		}
+	}
+	if (max_distance < d) {
+		max_distance = [d, i1, ret];
+	}
+	return ret;
 }
 
-function Crust( temp ) {
+function NNCrust() {
+
+	/* O(n) */
+	var nearestNeighbor = [];
+	for (var i = 0; i < controlPoints.size; i++) {
+		nearestNeighbor.splice(i, 0, []);
+		if (controlPoints.positions[i].y != 0) {
+			alert("The points are not in the same plane! Please refresh the page!");
+			return;
+		}
+	}
+
+	/* Compute the nearest neighbor: O(n^2) */
+	for (var i = 0; i < controlPoints.size; i++) {
+		if (nearestNeighbor[i].length < 2) {
+			var nearest_index = findNearestNeighbor( i );	
+			if (nearestNeighbor[i].indexOf(parseInt( nearest_index )) < 0) {
+				nearestNeighbor[i].push(parseInt( nearest_index ));	
+			} 
+			if (nearestNeighbor[parseInt( nearest_index )].indexOf(parseInt( i )) < 0) {
+				nearestNeighbor[parseInt( nearest_index )].push(i);
+			} 
+		}			
+	}
+	/* Compute the half neighbor: O(n^2) */
+	for (var i = 0; i < controlPoints.size; i++) {
+		if (nearestNeighbor[i].length != 2) {
+			var half_index = halfNeighbor( i, nearestNeighbor[i][0] );
+			nearestNeighbor[i].push(parseInt( half_index ));
+			nearestNeighbor[parseInt( half_index )].push(i);
+		}
+	}
+	//console.log(nearestNeighbor);
+	/* Reorder vertices: O(n) */
+	var temp = [];	
+	var i1 = max_distance[1];
+	var i2 = nearestNeighbor[i1][0] == max_distance[2] ? nearestNeighbor[i1][1] : nearestNeighbor[i1][0];
+	var p = controlPoints.positions[i1]
+	temp.push(new THREE.Vector3(p.x, p.y, p.z));
+	for (var i = 1; i < controlPoints.size; i++) {
+		//console.log(i1 + "\t" +i2);
+		p = controlPoints.positions[i2]
+		temp.push(new THREE.Vector3(p.x, p.y, p.z));
+		var i_temp = i1;
+		i1 = i2;
+		i2 = nearestNeighbor[i1][0] == i_temp ? nearestNeighbor[i1][1] : nearestNeighbor[i1][0];
+	}
+	
+
+	return copyAndModifyYOfArray(temp, 0, 0);
+}
+
+function Crust() {
 	
 	/* 
 	 *	CRUST(P) 
@@ -258,6 +365,7 @@ function Crust( temp ) {
 			endif
 	*/
 
+	//return site;
 
 }
 
@@ -1897,7 +2005,7 @@ function init() {
 	var customContainer = document.getElementById('gui');
 	customContainer.appendChild(gui.domElement);
 
-	gui.add(params, 'Curve Reconstruction', ['Crust', 'NN-Crust']).onChange(function(){
+	gui.add(params, 'Curve Reconstruction', ['','Crust', 'NN-Crust']).onChange(function(){
 		updateCurveReconstruction();
 	});
 	gui.add(params, 'Curve Reconstruction Visible').onChange(function(value){
@@ -1907,8 +2015,11 @@ function init() {
 			removeLine();
 		}
 	});
+	gui.add(params, 'Curve Shape', ['','Circle']).onChange(function(){
+		updateSampling();
+	});
 
-	gui.add(params, 'Curve', ['Bezier Curve', 'Cubic Uniform B-Spline', 'De Casteljau Subdivision', 'Quadric B-Spline']).onChange(function(){
+	gui.add(params, 'Curve', ['','Bezier Curve', 'Cubic Uniform B-Spline', 'De Casteljau Subdivision', 'Quadric B-Spline']).onChange(function(){
 		updateCurve();
 	});
 
@@ -1924,7 +2035,7 @@ function init() {
 	// 	controlPoints.positions.push(new THREE.Vector3(p.x, p.y, p.z));
 	// 	update3D();
 	// });
-	gui.add(params, 'Control Polyhedron', ['Revolution', 'Extrusion', 'Swap']).onChange(function(){
+	gui.add(params, 'Control Polyhedron', ['','Revolution', 'Extrusion', 'Swap']).onChange(function(){
 		updateControlPolygon();
 	});
 	gui.add(params, 'Control Polyhedron Visible').onChange(function(value){
@@ -1940,7 +2051,7 @@ function init() {
 	gui.add(params, 'v', 0.05, 0.5).step(0.05).onChange(function(value){
 		controlSurface.v = value;
 	});
-	gui.add(params, 'Surface', ['Bezier Surface', 'Cubic B-Spline Surface',
+	gui.add(params, 'Surface', ['','Bezier Surface', 'Cubic B-Spline Surface',
 	'Doo Sabin Surface', 'Catmull-Clark Surface', 'Loop Surface']).onChange(function(){
 		updateSurface();
 	});
@@ -2186,7 +2297,7 @@ function duplicatePoint() {
 	var new_object = addSplineObject(
 		new THREE.Vector3(object.x, object.y, object.z));
 	splineHelperObjects.splice(controlPoints.nextIndex, 0, new_object);
-	controlPoints.positions.push(new_object.position);
+	controlPoints.positions.splice(controlPoints.nextIndex, 0, new_object.position);
 	controlPoints.nextIndex++;
 	update3D();
 }
